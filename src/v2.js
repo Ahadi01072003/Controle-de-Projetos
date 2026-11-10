@@ -168,7 +168,7 @@ function vMinhas() {
   const run = take(u => u.c.ir != null).sort((a, b) => a.c.fp - b.c.fp);
   const next = take(() => true).sort((a, b) => a.c.ip - b.c.ip);
   const recent = all.filter(u => u.c.done && u.c.fr >= T - 14).sort((a, b) => b.c.fr - a.c.fr);
-  const venc = all.filter(u => !u.apoio && (u.c.done || u.c.status === 'atrasada')), ok = venc.filter(u => u.c.status === 'concluida').length;
+  const venc = all.filter(u => !u.apoio && u.c.done), ok = venc.filter(u => u.c.status === 'concluida').length;
   const btn = (u) => {
     if (u.apoio || u.c.done) return '';
     const a = u.x.a;
@@ -328,7 +328,7 @@ function openHelp() {
     <div class="md-b help">
       <div><b>Atalhos</b><p><span class="kbd2">N</span> nova atividade (dentro de um projeto) · <span class="kbd2">/</span> buscar atividade · <span class="kbd2">Esc</span> fecha janelas</p></div>
       <div><b>Situações</b><ul class="help-st">${ST_KEYS.filter(k => k !== 'cancelada').map(k => `<li>${chip(k, 'sm')}<span>${({ atrasada: 'passou do fim planejado sem concluir', inicio_atrasado: 'passou do início planejado sem começar', risco: `faltam até ${S.cfg.diasRisco} dias e o avanço está atrás do esperado (ou não foi informado), ou o avanço está 25 pontos abaixo`, andamento: 'começou e está em dia', nao_iniciada: 'ainda não chegou a data de início', pausada: 'parada por decisão do gestor', concluida_atraso: 'terminou depois do fim planejado atual', concluida: 'terminou até o fim planejado atual' })[k]}</span></li>`).join('')}</ul></div>
-      <div><b>Entregas no prazo</b><p>Das entregas que já venceram (concluídas ou passaram do fim), quantas foram feitas até o fim planejado. Atrasadas em aberto contam como fora do prazo.</p></div>
+      <div><b>Entregas no prazo</b><p>Das atividades finalizadas, quantas saíram até o fim planejado atual. As que já venceram e seguem em aberto aparecem à parte, como alerta.</p></div>
       <div><b>Produtividade (Reunião)</b><p>Do que vencia no período pelo plano do início do período, quanto foi entregue. Replanejar para fora não apaga a falha.</p></div>
       <div><b>Dias</b><p>“d” são dias corridos e “d.ú.” dias úteis, conforme a configuração de cada projeto.</p></div>
       <div><b>Avisos (sino)</b><p>Novas atividades atribuídas a você, além das suas atividades atrasadas ou em risco. Gestores também veem atraso e risco do projeto inteiro.</p></div>

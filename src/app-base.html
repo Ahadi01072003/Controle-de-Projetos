@@ -196,6 +196,12 @@ button{cursor:pointer}
 .hero .eyebrow{color:#9aa3bb}
 .hero .big{font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;margin:6px 0 6px}
 .hero p{margin:0;color:#b8bfd1;font-size:13px;max-width:30ch}
+.hero .hero-l{margin:0 0 8px;color:#dfe4ef;font-size:13.5px;max-width:none}
+.hero .hero-l b{color:#fff}
+.hero-b{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:#b8bfd1}
+.hero-b li{display:flex;gap:7px;align-items:baseline}
+.hero-b li i{width:7px;height:7px;border-radius:2px;background:var(--c);flex:none;transform:translateY(-1px)}
+.hero-b b{color:#fff;font-weight:650}
 .hero .ring{width:112px;height:112px;flex:none}
 .hero .ring .ringbg{stroke:rgba(255,255,255,.12)}
 .hero .ring .ringfg{stroke:#9fb2ff}
@@ -1296,8 +1302,7 @@ function vPainel() {
   if (!L.length) return emptyAll();
   const total = L.length, by = {}; ST_KEYS.forEach(k => by[k] = 0); acts().forEach(x => by[x.c.status]++);
   const concl = L.filter(x => x.c.done), noPrazo = by.concluida;
-  const venc = L.filter(x => x.c.done || x.c.status === 'atrasada'); // entregas que já venceram: concluídas + passaram do fim em aberto
-  const ader = venc.length ? noPrazo / venc.length * 100 : 0;
+  const ader = concl.length ? noPrazo / concl.length * 100 : 0; // das entregas finalizadas, quantas saíram até o fim planejado atual
   const noBase = concl.filter(x => x.c.statusOrig === 'concluida').length;
   const W = L.reduce((s, x) => s + (+x.a.peso || 1), 0);
   const prog = W ? L.reduce((s, x) => s + (+x.a.peso || 1) * x.c.valor, 0) / W * 100 : 0;
@@ -1307,10 +1312,15 @@ function vPainel() {
   const T = today();
 
   const hero = `<div class="card hero rise" style="--i:0">
-    ${ringSVG(venc.length ? ader : 0, 'hero')}
+    ${ringSVG(concl.length ? ader : 0, 'hero')}
     <div><div class="eyebrow">Entregas no prazo</div>
-    <div class="big">${venc.length ? cnum('ader', ader, 'pct') : '—'}</div>
-    <p>${venc.length ? `${noPrazo} de ${venc.length} ${venc.length === 1 ? 'entrega vencida feita' : 'entregas vencidas feitas'} no prazo${by.atrasada ? ` · ${by.atrasada} ${by.atrasada === 1 ? 'segue' : 'seguem'} em aberto` : ''}${concl.length ? ` · ${Math.round(noBase / concl.length * 100)}% das concluídas dentro da data original` : ''}` : 'Aparece quando a primeira entrega vencer'}</p></div></div>`;
+    <div class="big">${concl.length ? cnum('ader', ader, 'pct') : '—'}</div>
+    ${concl.length ? `<p class="hero-l"><b>${noPrazo} de ${concl.length}</b> ${concl.length === 1 ? 'atividade finalizada saiu' : 'atividades finalizadas saíram'} no prazo</p>
+    <ul class="hero-b">
+      <li><i style="--c:var(--st-donelate)"></i><span><b>${concl.length - noPrazo}</b> ${concl.length - noPrazo === 1 ? 'finalizada' : 'finalizadas'} com atraso</span></li>
+      ${concl.length ? `<li><i style="--c:#9aa3bb"></i><span><b>${noBase}</b> de ${concl.length} dentro da data original</span></li>` : ''}
+      ${by.atrasada ? `<li><i style="--c:var(--st-late)"></i><span>Atenção: <b>${by.atrasada}</b> ${by.atrasada === 1 ? 'já venceu e segue' : 'já venceram e seguem'} em aberto</span></li>` : ''}
+    </ul>` : '<p>Aparece quando a primeira atividade for finalizada</p>'}</div></div>`;
 
   const kpi = (i, lbl, icon, c, val, foot, act = '') => `<div class="kpi rise ${act ? 'click' : ''}" style="--i:${i};--c:${c}" ${act} ${act ? 'tabindex="0"' : ''}>
     <div class="lbl">${ic(icon)}${lbl}</div><div class="val">${val}</div><div class="foot">${foot}</div></div>`;
@@ -1675,12 +1685,12 @@ function vPessoas() {
     <div class="lkeys">${present.map(k => `<span><i class="solid" style="--c:${stColor(k)}"></i>${ST[k].l}</span>`).join('')}</div></div>
     ${rows.map((r, i) => { const by = {}; r.xs.forEach(x => by[x.c.status] = (by[x.c.status] || 0) + 1);
       return `<div class="prow">${whoHTML(r.p)}<div><div class="ptrack grow" style="--i:${i};width:${(r.xs.length / maxN * 100).toFixed(1)}%">${present.filter(k => by[k]).map(k => `<i style="--c:${stColor(k)};flex:${by[k]}" data-tipv="${by[k]}" data-tipl="${esc(r.p ? r.p.nome : 'Sem responsável')} · ${ST[k].l}"></i>`).join('')}</div></div><b class="tnum" style="text-align:right">${r.xs.length}</b></div>`; }).join('')}</div>`;
-  const tbl = `<div class="tbl-wrap rise" style="--i:2;max-height:none"><table class="tbl ptbl cardify"><thead><tr><th>Pessoa</th><th>Atividades</th><th>Concluídas</th><th data-tip="Entregas vencidas feitas no prazo. Atrasadas em aberto contam como fora do prazo.">Entregas no prazo</th><th>Atrasadas</th><th>Em risco</th><th>Replanejadas</th><th>Desvio médio do fim</th><th></th></tr></thead><tbody>
+  const tbl = `<div class="tbl-wrap rise" style="--i:2;max-height:none"><table class="tbl ptbl cardify"><thead><tr><th>Pessoa</th><th>Atividades</th><th>Concluídas</th><th data-tip="Das atividades finalizadas, quantas saíram até o fim planejado atual.">Entregas no prazo</th><th>Atrasadas</th><th>Em risco</th><th>Replanejadas</th><th>Desvio médio do fim</th><th></th></tr></thead><tbody>
     ${rows.map(r => {
       const xs = r.xs, done = xs.filter(x => x.c.done), ok = done.filter(x => x.c.status === 'concluida').length, lateEnd = xs.filter(x => x.c.status === 'atrasada').length;
       const late = xs.filter(x => x.c.status === 'atrasada' || x.c.status === 'inicio_atrasado').length, risk = xs.filter(x => x.c.status === 'risco').length;
       const rep = xs.filter(x => x.c.replan), dm = rep.length ? rep.reduce((s, x) => s + x.c.dFim, 0) / rep.length : null;
-      const ad = done.length + lateEnd ? ok / (done.length + lateEnd) * 100 : null;
+      const ad = done.length ? ok / done.length * 100 : null;
       return `<tr class="row" data-act="open-resp" data-id="${r.p ? r.p.id : '_none'}" tabindex="0"><td>${whoHTML(r.p, '')}${r.p && r.p.cargo ? `<div class="muted" style="font-size:12px;margin:2px 0 0 34px">${esc(r.p.cargo)}</div>` : ''}</td>
         <td class="tnum" data-l="Atividades">${xs.length}</td><td class="tnum" data-l="Concluídas">${done.length}</td>
         <td data-l="No prazo">${ad == null ? '<span class="muted">—</span>' : `<div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:90px"><i style="width:${ad}%;background:${ad >= 80 ? 'var(--st-done)' : ad >= 50 ? 'var(--st-risk)' : 'var(--st-late)'}"></i></div><b class="tnum">${Math.round(ad)}%</b></div>`}</td>
