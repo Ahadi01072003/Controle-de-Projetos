@@ -3028,7 +3028,7 @@ document.addEventListener('change', e => {
   else if (id === 'g-meta') { S.gMeta = e.target.value; S.ganttScrolled = false; render(); }
 });
 let rzT = 0;
-addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel') render(); }, 160); });
+addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel' || S.view === 'financeiro') render(); }, 160); });
 
 const tipEl = $('#tip');
 function showTip(x, y, html) {

@@ -52,36 +52,78 @@ function finAlerts(k) {
   return out;
 }
 
-/* ---------- curva físico × financeiro ---------- */
-function finSeries(pid, pagamentos, aj) {
+/* ---------- curva físico × financeiro (mesmo desenho da Curva S do painel) ---------- */
+function drawFinChart(host, pid, pagamentos, aj) {
   const L = live(allActs().filter(x => x.a.metaId === pid)), T = today();
-  const pays = pagamentos.map(p => ({ d: P(String(p.d || p.data).slice(0, 10)), v: +p.v || +p.valor || 0 })).filter(p => p.d != null).sort((a, b) => a.d - b.d);
-  const starts = L.map(x => x.c.ip).filter(n => n != null);
-  let d0 = Math.min(...starts, ...(pays.length ? [pays[0].d] : []), T), d1 = Math.max(T, ...(pays.length ? [pays[pays.length - 1].d] : []));
-  if (!isFinite(d0)) d0 = T - 30; if (d1 - d0 < 14) d0 = d1 - 14;
-  const n = 36, pts = [];
-  for (let k = 0; k <= n; k++) {
-    const D = Math.round(d0 + (d1 - d0) * k / n);
-    const fis = L.length ? projDay(L, D).real : 0;
-    const pago = pays.filter(p => p.d <= D).reduce((s, p) => s + p.v, 0);
-    pts.push({ D, fis, fin: aj > 0 ? Math.min(150, pago / aj * 100) : 0 });
+  const pays = pagamentos.map(p => ({ d: P(String(p.d).slice(0, 10)), v: +p.v || 0 })).filter(p => p.d != null).sort((a, b) => a.d - b.d);
+  if (!L.length && !pays.length) { host.innerHTML = '<p class="muted">O gráfico aparece quando houver atividades ou pagamentos.</p>'; return; }
+  let lo = Infinity, hi = -Infinity;
+  L.forEach(x => { lo = Math.min(lo, x.c.ip, x.c.ir ?? Infinity); hi = Math.max(hi, x.c.fp, x.c.fr ?? -Infinity); });
+  pays.forEach(p => { lo = Math.min(lo, p.d); hi = Math.max(hi, p.d); });
+  if (!isFinite(lo)) lo = T - 30; if (!isFinite(hi)) hi = T;
+  lo = Math.min(lo, T) - 1; hi = Math.max(hi, T) + 1;
+  const step = Math.max(1, Math.ceil((hi - lo) / 220)), days = [];
+  for (let d = lo; d <= hi; d += step) days.push(d);
+  if (!days.includes(hi)) days.push(hi); if (!days.includes(T)) days.push(T); days.sort((a, b) => a - b);
+  const cum = d => pays.reduce((s, p) => s + (p.d <= d ? p.v : 0), 0);
+  const fisAt = d => L.length ? projDay(L, d) : { real: 0, plan: 0 };
+  const pts = days.map(d => { const f = fisAt(d); return { d, plan: f.plan / 100, real: f.real / 100 }; });
+  const pctPago = d => aj > 0 ? cum(d) / aj : 0;
+  const top = Math.max(1, Math.ceil(Math.max(...pays.map(p => pctPago(p.d)), 0) * 4) / 4);
+  const Wd = host.clientWidth || 600, H = 250, m = { l: 40, r: Wd < 520 ? 14 : 78, t: 12, b: 26 }, iw = Wd - m.l - m.r, ih = H - m.t - m.b;
+  const X = d => m.l + (d - lo) / (hi - lo) * iw, Y = v => m.t + ih - Math.min(v, top) / top * ih;
+  const line = (k, upto = hi) => pts.filter(p => p.d <= upto).map((p, i) => (i ? 'L' : 'M') + X(p.d).toFixed(1) + ',' + Y(p[k]).toFixed(1)).join('');
+  // pagamentos acumulados: degraus (o valor só muda no dia do pagamento)
+  const pEnd = Math.max(T, pays.length ? pays[pays.length - 1].d : T);
+  let acc = 0, sp = `M${X(lo).toFixed(1)},${Y(0).toFixed(1)}`;
+  pays.forEach(p => { sp += `H${X(p.d).toFixed(1)}`; acc += p.v; sp += `V${Y(aj > 0 ? acc / aj : 0).toFixed(1)}`; });
+  sp += `H${X(pEnd).toFixed(1)}`;
+  const area = `${sp}V${Y(0).toFixed(1)}H${X(lo).toFixed(1)}Z`;
+  const yT = top > 1 ? [0, .25, .5, .75, 1, top] : [0, .25, .5, .75, 1];
+  let xT = []; const span = hi - lo;
+  if (span <= 50) { for (let d = lo; d <= hi; d++) if (wd(d) === 1) xT.push({ d, l: fds(d) }); }
+  else { for (let d = lo; d <= hi; d++) { const dt = Dt(d); if (dt.getUTCDate() === 1) xT.push({ d, l: MES[dt.getUTCMonth()] + (dt.getUTCMonth() === 0 ? ' ' + dt.getUTCFullYear() : '') }); } }
+  if (span > 300) xT = xT.filter((_, i) => i % 2 === 0);
+  const now = pts.find(p => p.d === T), rNow = now.real, plNow = now.plan, fNow = pctPago(T);
+  const gapEl = document.getElementById('fgap');
+  if (gapEl) {
+    const pp = v => Math.round(v * 100), gd = pp(fNow) - pp(rNow), warn = gd > 10;
+    gapEl.innerHTML = `<span>Hoje: físico realizado <b>${pp(rNow)}%</b> (planejado <b>${pp(plNow)}%</b>) · pago <b>${pp(fNow)}%</b> do valor ajustado (${brl(cum(T))}).</span><span>Pago − físico <b class="${warn ? 'neg' : gd < -10 ? '' : 'pos'}">${gd > 0 ? '+' : gd < 0 ? '−' : ''}${Math.abs(gd)} p.p.</b>${warn ? ' · pagamentos à frente da obra' : gd < -10 ? ' · pagamentos atrás da obra' : ' · em linha'}</span>`;
   }
-  return { pts, d0, d1 };
-}
-function finChart(pid, pagamentos, aj) {
-  const { pts, d0, d1 } = finSeries(pid, pagamentos, aj), W = 640, H = 210, pl = 36, pr = 10, pt = 10, pb = 26;
-  const mx = Math.max(100, ...pts.map(p => p.fin));
-  const X = D => pl + (D - d0) / (d1 - d0 || 1) * (W - pl - pr), Y = v => pt + (1 - v / mx) * (H - pt - pb);
-  const line = k => pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.D).toFixed(1)},${Y(p[k]).toFixed(1)}`).join('');
-  const T = today(), months = [];
-  for (let d = d0; d <= d1; d++) { const dt = Dt(d); if (dt.getUTCDate() === 1) months.push(d); }
-  const last = pts[pts.length - 1];
-  return `<svg class="fchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Avanço físico e financeiro ao longo do tempo">
-    ${[0, 50, 100].map(v => `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" class="gl"/><text x="${pl - 6}" y="${Y(v) + 4}" text-anchor="end">${v}%</text>`).join('')}
-    ${months.map(d => `<text x="${X(d)}" y="${H - 8}" text-anchor="middle">${MES[Dt(d).getUTCMonth()]}</text>`).join('')}
-    ${T >= d0 && T <= d1 ? `<line x1="${X(T)}" x2="${X(T)}" y1="${pt}" y2="${H - pb}" class="today"/>` : ''}
-    <path d="${line('fis')}" class="l-fis draw" pathLength="1"/><path d="${line('fin')}" class="l-fin draw" pathLength="1"/>
-    <circle cx="${X(last.D)}" cy="${Y(last.fis)}" r="3.5" class="d-fis"/><circle cx="${X(last.D)}" cy="${Y(last.fin)}" r="3.5" class="d-fin"/></svg>`;
+  // rótulos do dia de hoje sem sobrepor
+  let yR = Y(rNow), yF = Y(fNow);
+  if (Math.abs(yR - yF) < 16) { const mid = (yR + yF) / 2, up = yR <= yF; yR = mid + (up ? -8 : 8); yF = mid + (up ? 8 : -8); }
+  const right = X(T) > Wd - (Wd < 520 ? 90 : 150), lx = right ? X(T) - 10 : X(T) + 10, anc = right ? 'end' : 'start';
+  const lbl = (y, txt, c) => `<text x="${lx}" y="${y + 4}" text-anchor="${anc}" style="font-size:12px;font-weight:700;fill:${c};paint-order:stroke;stroke:var(--surface);stroke-width:4px">${txt}</text>`;
+  host.innerHTML = `<svg width="${Wd}" height="${H}" role="img" aria-label="Físico e financeiro: físico ${Math.round(rNow * 100)}%, pago ${Math.round(fNow * 100)}% até hoje">
+    <defs><linearGradient id="fgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fin)" stop-opacity=".22"/><stop offset="1" stop-color="var(--fin)" stop-opacity="0"/></linearGradient></defs>
+    <g class="grid">${yT.map(v => `<line x1="${m.l}" x2="${m.l + iw}" y1="${Y(v)}" y2="${Y(v)}"/>`).join('')}</g>
+    <g class="axis">${yT.map(v => `<text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`).join('')}
+    ${xT.map(t => `<text x="${X(t.d)}" y="${H - 6}" text-anchor="middle">${t.l}</text>`).join('')}</g>
+    <line x1="${X(T)}" x2="${X(T)}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--accent)" stroke-width="1" opacity=".55"/>
+    <text x="${X(T)}" y="${m.t + 10}" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--accent);paint-order:stroke;stroke:var(--surface);stroke-width:4px">Hoje</text>
+    ${L.length ? `<path class="draw" pathLength="1" stroke-dasharray="1" d="${line('plan')}" fill="none" stroke="var(--k-orig)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+    <path d="${area}" fill="url(#fgrad)" class="fadein"/>
+    <path class="draw" pathLength="1" stroke-dasharray="1" d="${sp}" fill="none" stroke="var(--fin)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    ${L.length ? `<path class="draw" pathLength="1" stroke-dasharray="1" d="${line('real', T)}" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+    ${pays.filter(p => p.d <= hi).map(p => `<circle cx="${X(p.d)}" cy="${Y(pctPago(p.d))}" r="2.6" fill="var(--fin)" class="fadein"/>`).join('')}
+    ${L.length ? `<circle cx="${X(T)}" cy="${Y(rNow)}" r="4.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>` : ''}
+    <circle cx="${X(T)}" cy="${Y(fNow)}" r="4.5" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/>
+    ${L.length ? lbl(yR, Math.round(rNow * 100) + '% físico', 'var(--ink)') : ''}${lbl(yF, Math.round(fNow * 100) + '% pago', 'var(--fin)')}
+    <g id="fx" style="display:none"><line y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-width="1"/><circle r="4" fill="var(--k-orig)" stroke="var(--surface)" stroke-width="2"/><circle r="4" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/><circle r="4" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/></g>
+    <rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="fhit"/></svg>`;
+  const svg = host.querySelector('svg'), g = svg.querySelector('#fx'), hit = svg.querySelector('#fhit');
+  hit.addEventListener('pointermove', e => {
+    const r = svg.getBoundingClientRect(), d = Math.max(lo, Math.min(hi, Math.round(lo + (e.clientX - r.left - m.l) / iw * (hi - lo))));
+    const f = fisAt(d), pl = f.plan / 100, re = d <= T && L.length ? f.real / 100 : null, fi = d <= pEnd ? pctPago(d) : null, x = X(d);
+    g.style.display = ''; g.children[0].setAttribute('x1', x); g.children[0].setAttribute('x2', x);
+    [[1, L.length ? pl : null], [2, re], [3, fi]].forEach(([i, v]) => { const c = g.children[i]; if (v == null) c.style.display = 'none'; else { c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', Y(v)); } });
+    showTip(e.clientX, e.clientY, `<div class="th">${fd(d)}${d === T ? ' · hoje' : ''}</div>
+      ${L.length ? `<div class="tr"><i style="--c:#9aa3bb"></i><b>${Math.round(pl * 100)}%</b><span>Físico planejado</span></div>` : ''}
+      ${re != null ? `<div class="tr"><i style="--c:#fff"></i><b>${Math.round(re * 100)}%</b><span>Físico realizado</span></div>` : ''}
+      ${fi != null ? `<div class="tr"><i style="--c:#2cc4ad"></i><b>${Math.round(fi * 100)}%</b><span>Pago · ${brl(cum(d))}</span></div>` : ''}`);
+  });
+  hit.addEventListener('pointerleave', () => { g.style.display = 'none'; hideTip(); });
 }
 function finCompareHTML(k, fis) {
   const gap = k.pct - fis, warn = gap > 10;
@@ -122,8 +164,9 @@ function vFinanceiro() {
     ${kpi(4, 'Pago até hoje', brl(k.pago), `${Math.round(k.pct)}% do valor ajustado`)}
     ${kpi(5, 'A pagar', brl(k.aPagar), k.aPagar < 0 ? 'pago acima do ajustado' : 'saldo restante', k.aPagar < 0 ? 'neg' : 'strong')}</div>`;
   const pays = (D.itens || []).filter(x => x.tipo === 'pagamento').map(x => ({ d: x.data, v: x.valor }));
-  const cmp = `<div class="card fin-cmp rise" style="--i:3"><div class="card-h"><h2>Físico × financeiro</h2><div class="lkeys"><span><i style="--c:var(--ink)"></i>Avanço físico</span><span><i style="--c:var(--fin)"></i>Pago (% do ajustado)</span></div></div>
-    <div class="fin-cmp-b">${finCompareHTML(k, fis)}<div class="fchart-w">${finChart(pid, pays, k.aj)}</div></div></div>`;
+  S.finChart = { pid, pays, aj: k.aj };
+  const cmp = `<div class="card fin-cmp rise" style="--i:3"><div class="card-h"><h2>Físico × financeiro</h2><div class="lkeys"><span><i style="--c:var(--k-orig)"></i>Físico planejado</span><span><i style="--c:var(--ink)"></i>Físico realizado</span><span><i style="--c:var(--fin)"></i>Pago (% do valor ajustado)</span></div></div>
+    <div class="sgap" id="fgap"></div><div class="chart" id="fchart" style="height:250px"></div></div>`;
   const tab = S.finTab, all = (D.itens || []).filter(x => x.tipo === tab), q = norm(S.finQ);
   const list = all.filter(x => !q || norm([x.descricao, x.fornecedor, x.nf].join(' ')).includes(q)).sort((a, b) => String(b.data).localeCompare(String(a.data)) || String(b.created_at).localeCompare(String(a.created_at)));
   const tot = list.reduce((s, x) => s + x.valor, 0);
@@ -146,9 +189,10 @@ function vFinanceiro() {
     ${body}</div>`;
   return `<div class="dwrap fin">${al.map(m => `<div class="banner fin-al">${ic('s_alert')}<span>${m}</span></div>`).join('')}${kpis}${cmp}${lists}</div>`;
 }
-function afterFin() {
+function afterFin(host) {
   const pid = S.proj; if (!finVisible(pid)) return;
   loadFin(pid);
+  const el = host && host.querySelector('#fchart'); if (el && S.finChart && S.finChart.pid === pid) drawFinChart(el, pid, S.finChart.pays, S.finChart.aj);
   if (!S.finCh || S.finCh.pid !== pid) {
     if (S.finCh) try { sb.removeChannel(S.finCh.ch); } catch (e) {}
     const re = () => { clearTimeout(S.finChT); S.finChT = setTimeout(() => loadFin(pid, true), 300); };

@@ -134,25 +134,13 @@
 .fval.strong{color:var(--ink)}
 .fin .banner.fin-al{background:color-mix(in srgb,var(--st-late) 9%,var(--surface));border-color:color-mix(in srgb,var(--st-late) 45%,transparent)}
 .fin .banner.fin-al .ic{color:var(--st-late)}
-.fin-cmp-b{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,2fr);gap:20px;align-items:center}
 .fcmp{display:flex;flex-direction:column;gap:10px}
 .fcmp-r{display:grid;grid-template-columns:76px minmax(0,1fr) 46px;gap:10px;align-items:center;font-size:13px}
 .fcmp-r .bar{height:10px}
 .fcmp p{margin:0;font-size:12.5px}
 .fwarn{color:#a86d00;display:flex;gap:6px;align-items:center;font-weight:600}
 .fwarn .ic{width:15px;height:15px}
-.fchart{width:100%;height:auto;display:block}
-.fchart text{font-size:10.5px;fill:var(--muted);font-family:var(--f-body)}
-.fchart .gl{stroke:var(--line);stroke-width:1}
-.fchart .today{stroke:var(--accent);stroke-dasharray:3 3}
-.fchart path{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.fchart .l-fis{stroke:var(--ink)}
-.fchart .l-fin{stroke:var(--fin)}
-.fchart .d-fis{fill:var(--ink)}
-.fchart .d-fin{fill:var(--fin)}
-.fchart path.draw{stroke-dasharray:1}
-.view.anim .fchart path.draw{animation:draw 1.2s cubic-bezier(.45,.05,.25,1) both .2s}
-.fin-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 12px;padding:0 0 8px;overflow-x:auto}
+.view.anim .fin-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 12px;padding:0 0 8px;overflow-x:auto}
 .fin-tabs button{border:0;background:none;padding:8px 12px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--muted);display:inline-flex;gap:7px;align-items:center;white-space:nowrap;transition:background .15s,color .15s}
 .fin-tabs button.on{background:var(--accent-soft);color:var(--ink)}
 .fin-tabs button b{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
@@ -213,7 +201,6 @@
   .sheet-me{border-top:1px solid rgba(255,255,255,.1);margin-top:10px;padding-top:12px;display:flex;flex-direction:column;gap:10px}
   .sheet-me .lnk{color:#9fb2ff;text-align:left}
   .toasts{bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
-  .fin-cmp-b{grid-template-columns:minmax(0,1fr)}
   .fin-mini{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rp-head .dstats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pd-row{grid-template-columns:28px minmax(0,1fr) 52px;grid-template-areas:"rk who pct" "rk bar n" "rk ps ps"}
