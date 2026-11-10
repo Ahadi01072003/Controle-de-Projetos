@@ -33,7 +33,11 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   // 2. gestor com acesso financeiro: lança pagamento, edita contrato, exclui; histórico registrado
   p = await open(); await login(p, 'gestor@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$('.fin-pc') !== null, 'painel mostra o cartão financeiro');
+  const progPainel = await p.$eval('.kpi:first-child .val', e => e.textContent.trim());
   await go(p, 'financeiro--' + FUP);
+  const progGraf = await p.$eval('#fgap b', e => e.textContent.trim());
+  ok(progGraf === progPainel, `avanço real do gráfico igual ao Progresso geral do painel (${progGraf} = ${progPainel})`);
+  ok(await p.$$eval('#fchart svg path.draw', e => e.length) === 2, 'gráfico só com avanço real e avanço pago');
   const aPagar = async () => p.$eval('.fin-k .kpi:nth-child(6) .val', e => e.textContent.trim());
   const before = await aPagar();
   await p.click('[data-act="fin-new"]'); await p.waitForTimeout(400);
