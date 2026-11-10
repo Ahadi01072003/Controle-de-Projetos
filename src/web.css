@@ -1,0 +1,44 @@
+/* ---------- login e acesso ---------- */
+.authwrap{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+.authwrap[hidden]{display:none!important}
+.authcard{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 26px;box-shadow:var(--shadow-lg);animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
+.authcard h1{font-family:var(--f-display);font-size:26px;letter-spacing:-.02em;margin:18px 0 6px}
+.authcard p{margin:0 0 12px}
+.authcard label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin:12px 0 5px}
+.authcard .inp{width:100%;height:42px}
+.authcard .btn.primary{width:100%;height:42px;justify-content:center;margin-top:6px}
+.authcard .auth-row{display:flex;gap:8px}.authcard .auth-row .btn{width:auto;flex:1}
+.auth-brand{display:flex;align-items:center;gap:12px}
+.auth-brand b{display:block;font-family:var(--f-display);font-size:19px;line-height:1.1}
+.auth-brand small{color:var(--muted);font-size:12px}
+body.authing .app{visibility:hidden}
+/* usuário logado no menu lateral */
+#meBox{display:flex;flex-direction:column;gap:6px;padding:2px 0 4px}
+.me-n{display:flex;align-items:center;gap:8px;color:#fff;min-width:0}
+.me-n b{display:block;font-size:13px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-n small{display:block;color:var(--rail-ink-2);font-size:11px}
+.me-n > div{min-width:0}
+.me-a{display:flex;gap:12px}
+.lnk-l{border:0;background:none;color:var(--rail-ink-2);font-size:12px;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.lnk-l:hover{color:#fff}
+/* usuários e acessos */
+.utbl{min-width:900px}
+.lvchips{display:flex;flex-wrap:wrap;gap:5px;max-width:420px}
+.lvchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:550;border:1px solid var(--line-2);border-radius:99px;padding:2px 9px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.lvchip .dot{width:8px;height:8px;border-radius:2px}
+.lvchip.adm{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.lvchip.lv-gestor{border-color:color-mix(in srgb,var(--st-done) 55%,var(--line-2))}
+.lvchip.lv-responsavel{border-color:color-mix(in srgb,var(--st-risk) 60%,var(--line-2))}
+.lvhelp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lvhelp-grid div{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--ink-2)}
+.lvhelp-grid b{color:var(--ink)}
+.matrix{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:center;padding:7px 10px;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .sel{width:100%;max-width:none;height:32px}
+.credbox{background:var(--sunken);border-radius:10px;padding:14px;font-family:var(--f-mono);font-size:13px;white-space:pre-wrap;word-break:break-all;margin:0;user-select:all}
+.rs-list{margin:6px 0 12px;padding-left:18px;color:var(--ink-2)}
+@media (max-width:600px){.mrow{grid-template-columns:1fr}.authcard{padding:22px 18px}}
+
+.utbl .qa .btn{width:auto;padding:0 12px}
+.utbl .qa .btn span{display:inline}

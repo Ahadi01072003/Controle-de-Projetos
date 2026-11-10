@@ -1,0 +1,20 @@
+const { chromium } = require('playwright'); const http = require('http'), fs = require('fs'), path = require('path');
+const SITE = path.resolve('../site'), fake = fs.readFileSync('fake_supabase.js', 'utf8'), csp = fs.readFileSync('csp.txt', 'utf8');
+const srv = http.createServer((q, r) => { let f = path.join(SITE, q.url === '/' ? 'index.html' : q.url.split('?')[0]); if (!fs.existsSync(f)) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.js') ? 'application/javascript' : 'text/html', 'content-security-policy': csp }); r.end(fs.readFileSync(f)); }).listen(0);
+(async () => {
+  const base = `http://localhost:${srv.address().port}/`, b = await chromium.launch(), p = await (await b.newContext({ viewport: { width: 1400, height: 900 } })).newPage(), errs = [];
+  p.on('pageerror', e => errs.push('PAGEERROR ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon|404|fonts\.g/.test(m.text())) errs.push(m.text().slice(0, 200)); });
+  await p.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__={docs:[]};\n${fake}` }));
+  await p.goto(base); await p.waitForSelector('#flg'); await p.fill('#lg-e', 'admin@teste.com'); await p.fill('#lg-p', 'senha1234'); await p.click('#lg-b'); await p.waitForTimeout(1500);
+  console.log('início, cartões de projeto:', await p.$$eval('.mcard', e => e.length), '| botão restaurar na tela vazia:', await p.$('.empty [data-act="bk-import"]') ? 'sim' : 'não');
+  await p.screenshot({ path: 'r1-vazio.png' });
+  await p.evaluate(() => location.hash = 'usuarios'); await p.waitForTimeout(900);
+  await p.click('[data-act="bk-import"]'); await p.waitForSelector('#rs-file', { state: 'attached' });
+  await p.setInputFiles('#rs-file', path.resolve(process.env.SEED || '../dados/backup.json')); await p.waitForTimeout(800);
+  console.log('resumo:', (await p.$$eval('.rs-list li', e => e.map(x => x.textContent))).join(' | ')); await p.screenshot({ path: 'r2-resumo.png' });
+  await p.click('#rs-go'); await p.waitForTimeout(2500); console.log('resultado:', (await p.textContent('#rs-b')).replace(/\s+/g, ' ').trim()); await p.screenshot({ path: 'r3-fim.png' });
+  await p.keyboard.press('Escape'); await p.evaluate(() => location.hash = 'projetos'); await p.waitForTimeout(1200);
+  console.log('depois, cartões de projeto:', await p.$$eval('.mcard', e => e.length), '|', (await p.$$eval('.mcard h3', e => e.map(x => x.textContent))).join(', '));
+  const n = await p.evaluate(() => window.__T__.docs.reduce((a, d) => (a[d.coll] = (a[d.coll] || 0) + 1, a), {})); console.log('no banco simulado:', JSON.stringify(n));
+  console.log(errs.length ? 'ERROS: ' + errs.join('\n') : 'sem erros'); await b.close(); srv.close();
+})();

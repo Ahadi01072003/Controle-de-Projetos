@@ -1,0 +1,20 @@
+const { chromium } = require('playwright'); const http = require('http'), fs = require('fs'), path = require('path');
+const SITE = path.resolve('../site'), seed = fs.readFileSync(process.env.SEED || '../dados/backup.json', 'utf8'), fake = fs.readFileSync('fake_supabase.js', 'utf8'), csp = fs.readFileSync('csp.txt', 'utf8');
+const srv = http.createServer((q, r) => { let f = path.join(SITE, q.url === '/' ? 'index.html' : q.url.split('?')[0]); if (!fs.existsSync(f)) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': f.endsWith('.js') ? 'application/javascript' : 'text/html', 'content-security-policy': csp, 'x-frame-options': 'DENY' }); r.end(fs.readFileSync(f)); }).listen(0);
+(async () => {
+  const base = `http://localhost:${srv.address().port}/`, b = await chromium.launch(), ctx = await b.newContext({ viewport: { width: 1400, height: 900 }, acceptDownloads: true }), p = await ctx.newPage(), viol = [], errs = [];
+  p.on('console', m => { const t = m.text(); if (/Content Security Policy|Refused to/i.test(t)) viol.push(t.slice(0, 200)); else if (m.type() === 'error' && !/favicon|404|fonts\.g/.test(t)) errs.push(t.slice(0, 200)); });
+  p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  await p.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};\n${fake}` }));
+  await p.goto(base); await p.waitForSelector('#flg'); await p.fill('#lg-e', 'admin@teste.com'); await p.fill('#lg-p', 'senha1234'); await p.click('#lg-b'); await p.waitForTimeout(1500);
+  await p.evaluate(() => location.hash = 'atividades--q5xvihq5ti1zoqd8g39d'); await p.waitForTimeout(1000);
+  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 20000 }).catch(e => null), p.click('#btnExport')]);
+  if (dl) { const f = path.resolve('exp.xlsx'); await dl.saveAs(f); console.log('Excel exportado:', dl.suggestedFilename(), fs.statSync(f).size, 'bytes'); } else console.log('FALHOU: nenhum download');
+  await p.waitForTimeout(500);
+  await p.click('[data-act="bk-export"]').catch(() => {}); 
+  await p.evaluate(() => location.hash = 'usuarios'); await p.waitForTimeout(800);
+  const [dl2] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }).catch(e => null), p.click('[data-act="bk-export"]')]);
+  if (dl2) { const f = path.resolve('bk.json'); await dl2.saveAs(f); const j = JSON.parse(fs.readFileSync(f)); console.log('Backup baixado:', dl2.suggestedFilename(), j.docs.length, 'registros'); } else console.log('FALHOU: backup');
+  console.log('violações de CSP:', viol.length ? viol.join('\n') : 'nenhuma'); console.log('erros:', errs.length ? errs.join('\n') : 'nenhum');
+  await b.close(); srv.close();
+})();

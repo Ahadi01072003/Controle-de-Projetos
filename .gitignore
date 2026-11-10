@@ -1,0 +1,11 @@
+# dados reais nunca vão para o repositório (ele é público)
+dados/
+*.backup.json
+backup*.json
+# saídas dos testes
+e2e/*.png
+e2e/bk.json
+e2e/exp.xlsx
+node_modules/
+.vercel/
+.DS_Store
