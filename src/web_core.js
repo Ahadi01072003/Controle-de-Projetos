@@ -104,6 +104,7 @@ function onData() {
     S.state = 'ready'; S.animUntil = performance.now() + 1500; resolveNames();
     const r = parseHash(location.hash.slice(1)); S.view = r.view; S.proj = r.proj;
     if (S.proj && S.proj !== '_none' && !metaById(S.proj)) { S.view = 'projetos'; S.proj = null; history.replaceState(null, '', '#projetos'); }
+    else if (!location.hash && S.me && S.me.pessoa_id && !anyGestor()) { S.view = 'minhas'; S.proj = null; history.replaceState(null, '', '#minhas'); }
     else if (!location.hash && S.metas.length === 1 && !S.isAdmin) { S.view = 'painel'; S.proj = S.metas[0].id; history.replaceState(null, '', '#painel--' + S.proj); }
   } else if (S.state === 'ready' && S.proj && S.proj !== '_none' && !metaById(S.proj)) { location.hash = 'projetos'; }
   schedule();
@@ -162,15 +163,15 @@ function showBlocked(msg) {
   $('#bl-out').onclick = () => sb.auth.signOut();
 }
 async function loadAccess() {
-  const [p, m] = await Promise.all([sb.from('profiles').select('*').eq('id', S.userId).maybeSingle(), sb.from('project_members').select('project_id,level').eq('user_id', S.userId)]);
+  const [p, m] = await Promise.all([sb.from('profiles').select('*').eq('id', S.userId).maybeSingle(), sb.from('project_members').select('project_id,level,fin').eq('user_id', S.userId)]);
   if (p.error || m.error) throw (p.error || m.error);
-  return { prof: p.data, lv: Object.fromEntries((m.data || []).map(r => [r.project_id, r.level])) };
+  return { prof: p.data, lv: Object.fromEntries((m.data || []).map(r => [r.project_id, r.level])), fin: Object.fromEntries((m.data || []).filter(r => r.fin).map(r => [r.project_id, true])) };
 }
 async function afterLogin(session) {
   S.userId = session.user.id;
   let acc; try { acc = await loadAccess(); } catch (e) { showLogin('Não foi possível carregar seu perfil. Verifique a conexão e tente de novo.'); return; }
   if (!acc.prof || !acc.prof.ativo) { showBlocked(!acc.prof ? 'Sua conta existe, mas ainda não foi cadastrada neste sistema. Fale com o administrador.' : 'Sua conta está desativada. Fale com o administrador.'); return; }
-  S.me = acc.prof; S.isAdmin = acc.prof.role === 'admin'; S.lv = acc.lv;
+  S.me = acc.prof; S.isAdmin = acc.prof.role === 'admin'; S.lv = acc.lv; S.finAcc = acc.fin;
   if (S.me.must_change_pw) { showChangePw(true); return; }
   authHide(); startApp();
 }
@@ -184,6 +185,7 @@ async function startApp() {
   db.collection('reunioes').onSnapshot(s => { S.reunioes = mergeReunioes(s.docs); S.ver++; schedule(); }, err);
   db.doc('config/geral').onSnapshot(s => { S.cfg = { ...DEFAULT_CFG, ...(s.exists ? s.data() : {}) }; S.loaded.c = true; onData(); }, err);
   try { await db.start(); } catch (e) { console.error(e); S.state = 'off'; render(); return; }
+  loadUserState();
   const tick = async () => { if (document.hidden || !sb) return; try { await refreshAccess(); await db.reloadAll(); } catch (e) {} };
   setInterval(tick, 60000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
@@ -191,8 +193,8 @@ async function startApp() {
 async function refreshAccess() {
   const a = await loadAccess();
   if (!a.prof || !a.prof.ativo) { await sb.auth.signOut(); return; }
-  const changed = JSON.stringify(a.lv) !== JSON.stringify(S.lv) || a.prof.role !== S.me.role || a.prof.pessoa_id !== S.me.pessoa_id;
-  S.me = a.prof; S.isAdmin = a.prof.role === 'admin'; S.lv = a.lv;
+  const changed = JSON.stringify(a.lv) !== JSON.stringify(S.lv) || JSON.stringify(a.fin) !== JSON.stringify(S.finAcc) || a.prof.role !== S.me.role || a.prof.pessoa_id !== S.me.pessoa_id;
+  S.me = a.prof; S.isAdmin = a.prof.role === 'admin'; S.lv = a.lv; S.finAcc = a.fin;
   if (changed) { S.ver++; schedule(); }
 }
 async function authInit() {
@@ -232,15 +234,15 @@ function vUsuarios() {
   if (A.failed) return `<div class="card empty"><h3>Não foi possível carregar</h3><div class="row"><button class="btn" data-act="usr-reload">Tentar de novo</button></div></div>`;
   if (!A.loaded) return loadingHTML();
   const rows = A.profiles.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  const chips = u => { if (u.role === 'admin') return `<span class="lvchip adm">Todos os projetos</span>`; const ms = A.members.filter(m => m.user_id === u.id); return ms.length ? ms.map(m => { const p = metaById(m.project_id); return `<span class="lvchip lv-${m.level}"><i class="dot" style="background:${p ? metaColor(p) : 'var(--line-2)'}"></i>${esc(p ? p.nome : 'Projeto removido')} · ${LV[m.level]}</span>`; }).join('') : '<span class="muted">Nenhum projeto</span>'; };
-  const tb = `<div class="tbl-wrap rise" style="--i:2;max-height:none"><table class="tbl utbl"><thead><tr><th>Usuário</th><th>Perfil</th><th>Responsável vinculado</th><th>Acesso aos projetos</th><th>Situação</th><th></th></tr></thead><tbody>
+  const chips = u => { if (u.role === 'admin') return `<span class="lvchip adm">Todos os projetos</span>`; const ms = A.members.filter(m => m.user_id === u.id); return ms.length ? ms.map(m => { const p = metaById(m.project_id); return `<span class="lvchip lv-${m.level}"><i class="dot" style="background:${p ? metaColor(p) : 'var(--line-2)'}"></i>${esc(p ? p.nome : 'Projeto removido')} · ${LV[m.level]}${m.fin ? ' · <b>R$</b>' : ''}</span>`; }).join('') : '<span class="muted">Nenhum projeto</span>'; };
+  const tb = `<div class="tbl-wrap rise" style="--i:2;max-height:none"><table class="tbl utbl cardify"><thead><tr><th>Usuário</th><th>Perfil</th><th>Responsável vinculado</th><th>Acesso aos projetos</th><th>Situação</th><th></th></tr></thead><tbody>
     ${rows.map(u => { const pe = pessoaById(u.pessoa_id); return `<tr class="row" data-act="usr-edit" data-id="${u.id}" tabindex="0">
       <td><span class="who">${avatar({ id: u.id, nome: u.nome }, '')}<span><b>${esc(u.nome)}</b><div class="muted" style="font-size:12px">${esc(u.email)}</div></span></span></td>
-      <td>${u.role === 'admin' ? '<span class="lvchip adm">Administrador</span>' : 'Usuário'}</td>
-      <td>${pe ? whoHTML(pe, 'sm') : '<span class="muted">—</span>'}</td>
-      <td><div class="lvchips">${chips(u)}</div></td>
-      <td>${u.ativo ? '<span class="aptchip ok">Ativo</span>' : '<span class="aptchip">Desativado</span>'}${u.must_change_pw ? '<div class="muted" style="font-size:11.5px;margin-top:4px">senha temporária</div>' : ''}</td>
-      <td><div class="qa"><button class="btn sm" data-act="usr-pw" data-id="${u.id}">Redefinir senha</button></div></td></tr>`; }).join('')}
+      <td data-l="Perfil">${u.role === 'admin' ? '<span class="lvchip adm">Administrador</span>' : 'Usuário'}</td>
+      <td data-l="Responsável">${pe ? whoHTML(pe, 'sm') : '<span class="muted">—</span>'}</td>
+      <td data-l="Projetos"><div class="lvchips">${chips(u)}</div></td>
+      <td data-l="Situação">${u.ativo ? '<span class="aptchip ok">Ativo</span>' : '<span class="aptchip">Desativado</span>'}${u.must_change_pw ? '<div class="muted" style="font-size:11.5px;margin-top:4px">senha temporária</div>' : ''}</td>
+      <td><div class="qa"><button class="btn icon sm" data-act="usr-pw" data-id="${u.id}" aria-label="Redefinir senha de ${esc(u.nome)}" data-tip="Redefinir senha">${ic('chave')}</button></div></td></tr>`; }).join('')}
   </tbody></table></div>`;
   return `<div class="dwrap">
     <div class="toolbar rise"><button class="btn primary" data-act="usr-new">${ic('plus')}Novo usuário</button><span class="count-note">${rows.length} ${rows.length === 1 ? 'usuário' : 'usuários'} · ${rows.filter(u => u.ativo).length} ativos</span>
@@ -249,15 +251,18 @@ function vUsuarios() {
       <div class="lvhelp-grid"><div><b>Leitor</b><span>Vê o projeto (painel, atividades, cronograma, reunião). Não altera nada.</span></div>
       <div><b>Responsável</b><span>Vê o projeto e lança só nas atividades e etapas em que é o responsável: início, conclusão, avanço e diário. Precisa estar ligado a um responsável cadastrado.</span></div>
       <div><b>Gestor</b><span>Controla o projeto inteiro: atividades, etapas, replanejamentos, diário, reunião e importação.</span></div>
-      <div><b>Administrador</b><span>Tudo, em todos os projetos: cria projetos, usuários e acessos.</span></div></div></div>
+      <div><b>Administrador</b><span>Tudo, em todos os projetos: cria projetos, usuários e acessos.</span></div>
+      <div><b>Financeiro (R$)</b><span>Marcado por projeto. Lança e vê contrato, pagamentos, faturamento direto e aditivos. Sem ele, quem é do projeto vê só os totais no painel.</span></div></div></div>
     ${tb}
-    <p class="muted" style="font-size:12.5px;margin:0">Sem acesso a um projeto, o usuário nem sabe que ele existe. As regras valem no servidor, não só na tela. O plano gratuito do banco não faz cópias automáticas: baixe um backup de tempos em tempos.</p></div>`;
+    ${backupsCard()}
+    <p class="muted" style="font-size:12.5px;margin:0">Sem acesso a um projeto, o usuário nem sabe que ele existe. As regras valem no servidor, não só na tela. <b>R$</b> marca quem tem acesso ao financeiro do projeto.</p></div>`;
 }
-const matrixHTML = cur => { const ps = [...S.metas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')); return ps.length ? ps.map(m => `<div class="mrow"><span class="mchip" style="color:var(--ink)"><i class="dot" style="background:${metaColor(m)}"></i><span>${esc(m.nome)}</span></span>
-  <select class="sel lvsel" data-p="${m.id}" aria-label="Acesso a ${esc(m.nome)}">${Object.entries(LV).map(([k, l]) => `<option value="${k}" ${(cur[m.id] || '') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`).join('') : '<p class="muted" style="margin:0">Nenhum projeto criado ainda.</p>'; };
+const matrixHTML = (cur, fin = {}) => { const ps = [...S.metas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')); return ps.length ? `<div class="mrow mhead"><span>Projeto</span><span>Nível</span><span>Financeiro</span></div>` + ps.map(m => `<div class="mrow"><span class="mchip" style="color:var(--ink)"><i class="dot" style="background:${metaColor(m)}"></i><span>${esc(m.nome)}</span></span>
+  <select class="sel lvsel" data-p="${m.id}" aria-label="Acesso a ${esc(m.nome)}">${Object.entries(LV).map(([k, l]) => `<option value="${k}" ${(cur[m.id] || '') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  <label class="mfin ${m.financeiro ? '' : 'off'}" data-tip="${m.financeiro ? 'Pode ver e lançar o financeiro deste projeto' : 'O projeto ainda não tem acompanhamento financeiro ligado'}"><input type="checkbox" class="finchk" data-p="${m.id}" ${fin[m.id] ? 'checked' : ''}><span>R$</span></label></div>`).join('') : '<p class="muted" style="margin:0">Nenhum projeto criado ainda.</p>'; };
 function openUserModal(uid) {
   const u = uid ? S.adm.profiles.find(p => p.id === uid) : null, self = u && u.id === S.userId;
-  const cur = {}; S.adm.members.filter(m => m.user_id === uid).forEach(m => cur[m.project_id] = m.level);
+  const cur = {}, curF = {}; S.adm.members.filter(m => m.user_id === uid).forEach(m => { cur[m.project_id] = m.level; if (m.fin) curF[m.project_id] = true; });
   openModal(`<form id="fu" novalidate><div class="md-h"><h3>${u ? 'Editar usuário' : 'Novo usuário'}</h3><p>${u ? esc(u.email) : 'A pessoa entra com o e-mail e a senha temporária e troca a senha no primeiro acesso.'}</p></div>
     <div class="md-b">
       <div class="cols2"><div class="f"><label for="u-nome">Nome <span class="req">*</span></label><input class="inp" id="u-nome" value="${esc(u ? u.nome : '')}" maxlength="80"></div>
@@ -265,7 +270,7 @@ function openUserModal(uid) {
       ${u ? '' : `<div class="f"><label for="u-pw">Senha temporária <span class="req">*</span></label><div class="withbtn"><input class="inp mono" id="u-pw" value="${genPw()}" autocomplete="off"><button type="button" class="btn sm" id="u-gen">Gerar outra</button></div></div>`}
       <div class="f"><label for="u-pessoa">Responsável vinculado</label><select class="sel" id="u-pessoa"><option value="">Nenhum</option>${pessoaOptions(u ? u.pessoa_id || '' : '', false)}</select><span class="hint">Obrigatório para o nível “Responsável”: define em quais atividades e etapas a pessoa pode lançar.</span></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap"><label class="tog"><input type="checkbox" id="u-admin" ${u && u.role === 'admin' ? 'checked' : ''} ${self ? 'disabled' : ''}>Administrador (acesso total)</label>${u ? `<label class="tog"><input type="checkbox" id="u-ativo" ${u.ativo ? 'checked' : ''} ${self ? 'disabled' : ''}>Usuário ativo</label>` : ''}</div>
-      <div class="f" id="u-mx"><span class="lab">Acesso por projeto</span><div class="matrix">${matrixHTML(cur)}</div><span class="hint">Leitor só vê · Responsável lança no que é dele · Gestor controla o projeto inteiro.</span></div>
+      <div class="f" id="u-mx"><span class="lab">Acesso por projeto</span><div class="matrix">${matrixHTML(cur, curF)}</div><span class="hint">Leitor só vê · Responsável lança no que é dele · Gestor controla o projeto inteiro · R$ libera o financeiro (sem nível, vira Leitor).</span></div>
       <p class="err" id="u-err" role="alert"></p></div>
     <div class="md-f">${u && !self ? `<button type="button" class="btn danger sm" data-act="usr-del" data-id="${u.id}" style="margin-right:auto">${ic('lixo')}Excluir</button>` : ''}<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="submit" class="btn primary">${u ? 'Salvar' : 'Criar usuário'}</button></div></form>`);
   const g = $('#u-gen'); if (g) g.onclick = () => { $('#u-pw').value = genPw(); };
@@ -273,7 +278,7 @@ function openUserModal(uid) {
   $('#fu').addEventListener('submit', async e => {
     e.preventDefault(); const er = m => { $('#u-err').textContent = m; return false; };
     const nome = $('#u-nome').value.trim(), em = $('#u-email').value.trim().toLowerCase(), pes = $('#u-pessoa').value, adm = $('#u-admin').checked;
-    const lv = {}; $$('.lvsel').forEach(s => { if (s.value) lv[s.dataset.p] = s.value; });
+    const lv = {}, fin = {}; $$('.lvsel').forEach(s => { if (s.value) lv[s.dataset.p] = s.value; }); $$('.finchk').forEach(c => { if (c.checked) { fin[c.dataset.p] = true; if (!lv[c.dataset.p]) lv[c.dataset.p] = 'leitor'; } });
     if (!nome) return er('Informe o nome.');
     if (!u && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return er('Informe um e-mail válido.');
     const pw = u ? null : $('#u-pw').value; if (!u && pw.length < 8) return er('A senha temporária precisa ter pelo menos 8 caracteres.');
@@ -283,7 +288,7 @@ function openUserModal(uid) {
       let id = uid;
       if (!u) { const r = await sb.rpc('admin_create_user', { p_email: em, p_nome: nome, p_senha: pw, p_pessoa: pes || null, p_admin: adm }); if (r.error) throw r.error; id = r.data; }
       else { const r = await sb.from('profiles').update({ nome, pessoa_id: pes || null, role: adm ? 'admin' : 'user', ativo: self ? true : $('#u-ativo').checked }).eq('id', id); if (r.error) throw r.error; }
-      const had = { ...cur }, rem = Object.keys(had).filter(p => !lv[p]), rows = Object.entries(lv).filter(([p, l]) => had[p] !== l).map(([project_id, level]) => ({ project_id, user_id: id, level }));
+      const had = { ...cur }, rem = Object.keys(had).filter(p => !lv[p]), rows = Object.entries(lv).filter(([p, l]) => had[p] !== l || !!curF[p] !== !!fin[p]).map(([project_id, level]) => ({ project_id, user_id: id, level, fin: !!fin[project_id] }));
       if (rem.length) { const r = await sb.from('project_members').delete().eq('user_id', id).in('project_id', rem); if (r.error) throw r.error; }
       if (rows.length) { const r = await sb.from('project_members').upsert(rows, { onConflict: 'project_id,user_id' }); if (r.error) throw r.error; }
       await loadAdmin(true);
@@ -323,9 +328,11 @@ async function exportBackup() {
   try {
     const docs = []; let from = 0;
     for (;;) { const { data, error } = await sb.from('docs').select('coll,id,data').order('coll').order('id').range(from, from + 999); if (error) throw error; docs.push(...data); if (data.length < 1000) break; from += 1000; }
-    const out = { versao: 1, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs };
+    const [fc, fi] = await Promise.all([sb.from('fin_contratos').select('*'), sb.from('fin_itens').select('*')]);
+    if (fc.error || fi.error) throw (fc.error || fi.error);
+    const out = { versao: 2, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs, fin_contratos: fc.data || [], fin_itens: fi.data || [] };
     await downloads.save({ filename: `backup-controle-de-projetos-${ISO(today())}.json`, data: new Blob([JSON.stringify(out)], { type: 'application/json' }) });
-    dismissToast(t); toast(`Backup gerado: ${docs.length} registros.`, 'ok');
+    dismissToast(t); toast(`Backup gerado: ${docs.length + out.fin_itens.length + out.fin_contratos.length} registros.`, 'ok');
   } catch (e) { dismissToast(t); toast('Não foi possível gerar o backup.', 'err'); }
 }
 function openRestore() {
@@ -336,9 +343,11 @@ function openRestore() {
     try {
       const j = JSON.parse(await f.text()); if (!j || !Array.isArray(j.docs)) throw 0;
       const docs = j.docs.filter(d => d && d.coll && d.id && d.data && typeof d.data === 'object' && ['atividades', 'metas', 'pessoas', 'reunioes', 'eventos', 'config'].includes(d.coll));
-      if (!docs.length) throw 0;
+      if (!docs.length && !(Array.isArray(j.fin_itens) && j.fin_itens.length)) throw 0;
       const cnt = {}; docs.forEach(d => cnt[d.coll] = (cnt[d.coll] || 0) + 1);
-      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
+      const fc = Array.isArray(j.fin_contratos) ? j.fin_contratos.filter(x => x && x.project_id) : [], fi = Array.isArray(j.fin_itens) ? j.fin_itens.filter(x => x && x.id && x.project_id) : [];
+      if (fc.length) cnt.fin_contratos = fc.length; if (fi.length) cnt.fin_itens = fi.length;
+      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração', fin_contratos: 'contratos (financeiro)', fin_itens: 'lançamentos financeiros' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
       $('#modal .md-f').innerHTML = `<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="button" class="btn primary" id="rs-go">Restaurar agora</button>`;
       $('#rs-go').onclick = async () => {
         $('#rs-go').disabled = true; const order = ['config', 'metas', 'pessoas', 'atividades', 'reunioes', 'eventos'];
@@ -347,6 +356,10 @@ function openRestore() {
           await Promise.all(docs.slice(i, i + 6).map(async d => { try { await db.doc(d.coll + '/' + d.id).set(d.data); done++; } catch (e) { bad++; } }));
           $('#rs-pb').style.width = ((i + 6) / docs.length * 100).toFixed(0) + '%'; $('#rs-st').textContent = `${Math.min(done + bad, docs.length)} de ${docs.length}…`;
         }
+        const strip = x => { const y = { ...x }; delete y.created_at; delete y.created_by; delete y.updated_at; delete y.updated_by; return y; };
+        if (fc.length) { const r = await sb.from('fin_contratos').upsert(fc.map(strip), { onConflict: 'project_id' }); if (r.error) bad += fc.length; else done += fc.length; }
+        for (let i = 0; i < fi.length; i += 200) { const part = fi.slice(i, i + 200), r = await sb.from('fin_itens').upsert(part.map(strip), { onConflict: 'id' }); if (r.error) bad += part.length; else done += part.length; }
+        S.finD = {}; S.finR = {};
         try { await db.reloadAll(); } catch (e) {}
         $('#rs-b').innerHTML = `<div class="empty" style="padding:14px 0"><h3>${bad ? 'Restauração com avisos' : 'Restauração concluída'}</h3><p>${done} registros gravados${bad ? ` · ${bad} não puderam ser gravados` : ''}.</p></div>`;
         $('#modal .md-f').innerHTML = `<button type="button" class="btn primary" data-act="close-modal">Fechar</button>`; if (done) celebrate();
@@ -377,3 +390,36 @@ async function closeMeeting() {
   if (n) { logEvt('reuniao', S.proj ? { metaId: S.proj } : null, `Reunião de ${fds(T)} fechada${S.proj ? '' : ' (' + n + ' projetos)'}`); toast(`Reunião de ${fds(T)} fechada em ${n} ${n === 1 ? 'projeto' : 'projetos'}. A próxima vai comparar com hoje.`, 'ok'); }
   else toast('Não foi possível fechar a reunião.', 'err');
 }
+
+/* ---------- cópias automáticas (o banco guarda as 8 mais recentes) ---------- */
+S.bks = { list: [], loaded: false, loading: false };
+async function loadBackups() {
+  if (S.bks.loading) return; S.bks.loading = true;
+  try { const { data, error } = await sb.from('backups').select('id,criado_em,origem,registros').order('criado_em', { ascending: false }); if (error) throw error; S.bks.list = data || []; } catch (e) { S.bks.list = []; S.bks.err = true; }
+  S.bks.loaded = true; S.bks.loading = false; schedule();
+}
+function backupsCard() {
+  if (!S.bks.loaded) { loadBackups(); return `<div class="card rise bk-card"><div class="card-h"><h2>${ic('copia')}Cópias automáticas</h2></div><div class="skel-line"></div></div>`; }
+  const L = S.bks.list;
+  return `<div class="card rise bk-card"><div class="card-h"><h2>${ic('copia')}Cópias automáticas</h2><span class="sub">o banco guarda sozinho uma cópia por semana (domingo de madrugada) e mantém as 8 mais recentes</span></div>
+    ${L.length ? `<ul class="rp-list">${L.map(b => `<li><span class="mono">${new Date(b.criado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span><span class="aptag">${b.origem === 'auto' ? 'automática' : 'manual'}</span><span class="muted">${b.registros} registros</span><button class="btn sm" data-act="bk-get" data-id="${b.id}" style="margin-left:auto">${ic('down')}Baixar</button></li>`).join('')}</ul>` : '<p class="muted">A primeira cópia automática sai no próximo domingo. Você pode fazer uma agora.</p>'}
+    <div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-act="bk-now">${ic('copia')}Fazer cópia agora</button><span class="muted" style="font-size:12.5px;align-self:center">Para voltar uma cópia: baixe o arquivo e use “Restaurar backup”.</span></div></div>`;
+}
+async function backupNow(btn) {
+  btn.disabled = true;
+  const { error } = await sb.rpc('fazer_backup', { p_origem: 'manual' });
+  btn.disabled = false;
+  if (error) { toast(dbErr(error).message, 'err'); return; }
+  toast('Cópia feita e guardada no banco.', 'ok'); S.bks.loaded = false; render();
+}
+async function backupGet(id) {
+  const { data, error } = await sb.from('backups').select('dados,criado_em').eq('id', id).maybeSingle();
+  if (error || !data) { toast('Não foi possível baixar a cópia.', 'err'); return; }
+  await downloads.save({ filename: `backup-controle-de-projetos-${String(data.criado_em).slice(0, 10)}-copia-${id}.json`, data: new Blob([JSON.stringify(data.dados)], { type: 'application/json' }) });
+  toast('Cópia baixada.', 'ok');
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  if (t.dataset.act === 'bk-now') backupNow(t);
+  else if (t.dataset.act === 'bk-get') backupGet(+t.dataset.id);
+});

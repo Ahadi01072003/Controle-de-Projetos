@@ -137,3 +137,51 @@ Se precisar de token outra vez, peça via `request_credential` (host `api.vercel
 - Fluxo de aprovações e autolançamento antigos foram removidos a pedido. Do mundo "artifact" ficou só a parte de conflito de reuniões.
 - Termos usados na interface: "Plano original" (nunca "Linha de base"), "Plano atual", "Realizado".
 - O usuário fala português (pt-BR).
+
+## 7. Versão 2 (10/11/2026)
+
+**Banco** (migration `20261110180000_financeiro_alertas_backups`; tudo aditivo, com testes de RLS feitos numa transação desfeita):
+
+- `project_members.fin`: acesso financeiro por projeto. A função `can_fin(pid)` vale para o admin ou para quem tem `fin` no projeto.
+- `fin_contratos` (valor do contrato por projeto) e `fin_itens` (`pagamento`, `fd` = faturamento direto, `aditivo`). Ambos têm RLS por `can_fin`.
+- Autoria e datas vêm do trigger `fin_touch`.
+- `fin_log`: histórico gravado pelo trigger `fin_audit` (security definer). Ninguém grava nele direto.
+- `fin_resumo(pid)`: devolve só os totais, para qualquer membro do projeto (o cartão do painel usa).
+- `user_state`: guarda os avisos lidos por usuário (RLS: só o próprio usuário).
+- `backups` + `fazer_backup()`:
+  - o pg_cron roda `backup-semanal-controle` aos domingos, 06:17 UTC;
+  - guarda as 8 cópias mais recentes;
+  - o admin pode fazer uma cópia manual e baixar.
+
+**App:**
+
+- **Sino de avisos:**
+  - tipos: nova atividade ou etapa atribuída a mim (`atribuidoEm`/`atribuidoPor`), atrasada e em risco;
+  - gestores também recebem atraso e risco do projeto inteiro;
+  - clicar abre a ficha; o "lido" fica no banco;
+  - avisos de atribuição só valem a partir de `ALERT_START` (2026-11-10).
+- **Minhas atividades:** tela inicial de quem só lança. Mostra o que é do usuário em todos os projetos, por urgência, com Iniciar e Concluir.
+- **Apoio** (`apoioIds`): pessoas que ajudam numa atividade. Recebem aviso, mas quem lança é o responsável.
+- **Juntar/dividir pessoas** (Responsáveis, admin): limpa duplas como "Jorge/Thiago" (um vira responsável, o outro fica no apoio).
+- **Produtividade na Reunião:**
+  - conta o que vencia no período pelo plano do início do período (replanejar para fora não apaga a falha);
+  - recuperadas e adiantadas aparecem à parte;
+  - opção de ocultar os nomes.
+- A Reunião separa "mudou por lançamento" de "piorou com o tempo" e agrupa os itens por responsável.
+- **Financeiro:**
+  - chave por projeto (só o admin liga, em Editar projeto);
+  - KPIs: contrato, aditivos, FD, valor ajustado, pago e a pagar;
+  - curva físico × financeiro, abas de lançamentos, histórico e Excel;
+  - o FD tem cálculo de quantidade × valor unitário.
+- **Regras:**
+  - "Entregas no prazo" conta as atrasadas em aberto como fora do prazo;
+  - "Em risco" perto do fim só quando o avanço está atrás do esperado (ou não foi informado);
+  - unidade "d.ú." para dias úteis.
+- **Usabilidade:**
+  - lista abre por criticidade, com as concluídas ocultas;
+  - ficha não abre com o cursor no título;
+  - menu "⋯" no topo e ajuda no menu lateral;
+  - celular: barra embaixo, folha "Mais" e tabelas em cartões;
+  - cor própria para "Pausada" e transição suave entre telas.
+
+**Testes:** `e2e/v2_test.js` cobre os fluxos novos (34 checagens) com `window.__FIN_DEMO__`, que liga dados de demonstração só no Supabase simulado.

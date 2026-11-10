@@ -8,7 +8,7 @@ const srv = http.createServer((q, r) => { let f = path.join(SITE, q.url === '/' 
   await p.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};\n${fake}` }));
   await p.goto(base); await p.waitForSelector('#flg'); await p.fill('#lg-e', 'admin@teste.com'); await p.fill('#lg-p', 'senha1234'); await p.click('#lg-b'); await p.waitForTimeout(1500);
   await p.evaluate(() => location.hash = 'atividades--q5xvihq5ti1zoqd8g39d'); await p.waitForTimeout(1000);
-  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 20000 }).catch(e => null), p.click('#btnExport')]);
+  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 20000 }).catch(e => null), p.click('#btnMore').then(() => p.click('#btnExport'))]);
   if (dl) { const f = path.resolve('exp.xlsx'); await dl.saveAs(f); console.log('Excel exportado:', dl.suggestedFilename(), fs.statSync(f).size, 'bytes'); } else console.log('FALHOU: nenhum download');
   await p.waitForTimeout(500);
   await p.click('[data-act="bk-export"]').catch(() => {}); 

@@ -20,7 +20,7 @@ R("s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';", "
 # ---------- 2. estado e permissões ----------
 R("open: new Set(), reunioes: [], rep: null,", "open: new Set(), reunioes: [], rep: null, lv: {}, me: null, isAdmin: false, started: false,")
 cut("async function write(fn, quiet = false) {", "/* ===================== UI: eventos, tooltip, toast, confete ===================== */")
-s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
+s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + '\n' + part('v2.js') + '\n' + part('financeiro.js') + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
 R("S.canWrite", "S.canWrite", s.count("S.canWrite"))  # no-op guard (mantém contagem)
 R("boot();\n</script>", "authInit();\n</script>")
 
@@ -32,7 +32,6 @@ R("""      <div id="todayLbl"></div>""", """      <div id="meBox"></div>
       <div id="todayLbl"></div>""")
 R("""<div class="toasts" id="toasts" aria-live="polite"></div>""", """<div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="authwrap" id="auth" hidden></div>""")
-R("<div>Atalhos: <span class=\"kbd\">N</span> nova atividade · <span class=\"kbd\">/</span> buscar</div>", "<div>Atalhos: <span class=\"kbd\">N</span> nova atividade · <span class=\"kbd\">/</span> buscar</div>")
 
 # ---------- 4. navegação e telas ----------
 R("""  projetos:        { t: 'Projetos', i: 'alvo', home: 1,""", """  usuarios:        { t: 'Usuários e acessos', i: 'pessoas', home: 1, sub: () => 'Quem entra no sistema e o que cada pessoa pode ver e controlar em cada projeto', r: vUsuarios, after: afterUsuarios },
@@ -143,6 +142,7 @@ R("""data-act="new-meta">${ic('plus')}Novo projeto</button><button class="btn" d
 
 # ---------- 7. estilos e vendor ----------
 R("/* ---------- table ---------- */", part('web.css') + "\n/* ---------- table ---------- */")
+R("@media (prefers-reduced-motion: reduce){", part('v2.css') + "\n@media (prefers-reduced-motion: reduce){")
 head = '''<!doctype html>
 <html lang="pt-BR">
 <head>
