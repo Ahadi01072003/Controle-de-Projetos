@@ -1926,7 +1926,7 @@ function dailyBoxHTML(a) {
   let pp = '', rp = '';
   all.forEach((d, i) => { pp += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(di.plannedAt(d)).toFixed(1); if (d <= T) rp += (rp ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(di.realAt(d)).toFixed(1); });
   const out = `<legend>Avanço diário</legend>
-    <div class="dstats sm"><div><span>Real</span><b>${Math.round(di.real)}%</b></div><div><span>Planejado até hoje</span><b>${Math.round(di.plan)}%</b></div>
+    <div class="dstats sm"><div><span>Real</span><b>${Math.round(c.done ? 100 : di.real)}%</b></div><div><span>Planejado até hoje</span><b>${Math.round(di.plan)}%</b></div>
       <div><span>Diferença</span><b class="${di.gap < -0.5 ? 'neg' : di.gap > 0.5 ? 'pos' : ''}">${fmtPP(di.gap)}</b></div>
       <div><span>Dias do plano</span><b>${di.N} <small>${cal().uteis ? 'úteis' : 'corridos'} · ${num(di.per, di.per % 1 ? 1 : 0)}% cada</small></b></div></div>
     <div class="dcal">${dailyCells(a, null, c)}</div>
@@ -1957,6 +1957,10 @@ async function setDay(id, k, val, quiet = false, sid = null) {
   if (!quiet && !sid && after.di && after.di.real >= 100 && !doc.fimReal && (!before.di || before.di.real < 100)) {
     const last = Object.keys(doc.diario).filter(x => doc.diario[x] > 0).sort().pop();
     toast(`${a.codigo} chegou a 100% no diário.`, 'ok', `Registrar fim real em ${fds(P(last))}`, () => write(() => db.doc('atividades/' + id).update({ fimReal: last, atualizadoEm: nowISO() })).then(ok => ok && (P(last) <= P(doc.fimPlan) ? celebrate() : 0)), 12000);
+  }
+  if (!quiet && val >= 100 && P(k) >= today()) {
+    const cc = sid ? (after.subs || [])[subsOf(full).findIndex(s => s.id === sid)] : after;
+    if (cc && cc.di && !cc.done && cc.di.real < 100 && cc.fp > P(k)) toast(`Terminou antes do previsto? ${sid ? 'A etapa' : 'A atividade'} está em ${Math.round(cc.di.real)}% só porque os dias seguintes do plano ainda não chegaram.`, '', 'Concluir hoje', () => finishAt(id, sid, k), 12000);
   }
   if (!quiet && sid) { const sc = (after.subs || [])[subsOf(full).findIndex(s => s.id === sid)]; const s = subsOf(full).find(x => x.id === sid);
     if (sc && sc.di && sc.di.real >= 100 && !s.fimReal) { const last = Object.keys(s.diario).filter(x => s.diario[x] > 0).sort().pop(); toast(`Etapa “${s.nome}” chegou a 100%.`, 'ok', `Concluir em ${fds(P(last))}`, () => subSetDates(id, sid, 'fim', last), 12000); } }
@@ -2032,7 +2036,7 @@ function vDiario() {
   if (!calFor(S.proj).daily) return `<div class="card empty rise"><svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">${IC.cal}</svg><h3>Este projeto está no modo padrão</h3><p>O avanço vem das datas reais e do % informado na atividade. Para registrar o avanço dia a dia, ligue o modo diário em “Editar projeto”.</p>${S.canWrite && S.proj !== '_none' ? `<div class="row"><button class="btn primary" data-act="edit-meta" data-id="${S.proj}">${ic('editar')}Editar projeto</button></div>` : ''}</div>`;
   const T = today(), D = Math.min(S.diaD ?? T, T), K = ISO(D), work = isWork(D);
   const items = diaryItems(L);
-  const inPlan = items.filter(it => D >= it.c.ip && D <= it.c.fp && (!it.c.done || K in it.c.di.log));
+  const inPlan = items.filter(it => D >= it.c.ip && D <= it.c.fp && (!it.c.done || K in it.c.di.log || it.c.fr === D));
   const late = items.filter(it => !it.c.done && it.c.fp < D && !inPlan.includes(it));
   const extra = items.filter(it => K in it.c.di.log && !inPlan.includes(it) && !late.includes(it));
   const visible = [...inPlan, ...late, ...extra];
@@ -2045,7 +2049,7 @@ function vDiario() {
     const { x, s, c } = it, di = c.di, v = K in di.log ? di.val(K) : null, st = dayState(v);
     const idx = di.days.indexOf(D);
     const where = idx >= 0 ? `Dia ${idx + 1} de ${di.N}` : tag === 'late' ? `Fora do plano · fim era ${fds(c.fp)}` : D < c.ip ? 'Antes do início planejado' : (!isWork(D) ? 'Dia não útil' : 'Dia extra');
-    const plan = Math.round(di.plannedAt(D)), real = di.realAt(D), gap = real - di.plannedAt(D), dis = ro ? 'disabled' : '', selOn = S.dsel.has(it.key);
+    const plan = Math.round(di.plannedAt(D)), real = c.done && c.fr <= D ? 100 : di.realAt(D), gap = real - di.plannedAt(D), dis = ro ? 'disabled' : '', selOn = S.dsel.has(it.key);
     const p = s ? (pessoaById(s.respId) || x.p) : x.p;
     return `<div class="drow ${st ? 'has-' + st : ''} ${selOn ? 'picked' : ''}" data-id="${x.a.id}" ${s ? `data-sid="${s.id}"` : ''} data-key="${it.key}">
       <div class="dl-main"><div class="dl-top">${ro ? '' : `<input type="checkbox" class="dsel" data-key="${it.key}" ${selOn ? 'checked' : ''} aria-label="Selecionar">`}<span class="mono muted">${esc(x.a.codigo || '')}</span>${s ? etBadge(it.si + 1) : ''}<b class="dl-t" data-act="open-act" data-id="${x.a.id}" tabindex="0">${esc(s ? s.nome : x.a.titulo)}</b></div>
@@ -2054,6 +2058,7 @@ function vDiario() {
           <button class="db feito ${st === 'feito' ? 'on' : ''}" data-act="dset" data-v="100" ${dis} aria-pressed="${st === 'feito'}">${ic('check')}Feito</button>
           <button class="db parcial ${st === 'parcial' ? 'on' : ''}" data-act="dpart" ${dis} aria-pressed="${st === 'parcial'}">${st === 'parcial' ? Math.round(v) + '%' : 'Parcial'}</button>
           <button class="db nao ${st === 'nao' ? 'on' : ''}" data-act="dset" data-v="0" ${dis} aria-pressed="${st === 'nao'}">${ic('fechar')}Não feito</button></div>
+        ${c.done ? `<span class="aptchip ok dfin-ok">${ic('check')}Concluída em ${fds(c.fr)}</span>` : canLog(x.a, s) && c.ir != null && D >= c.ir ? `<button class="btn sm go dfin" data-act="dfin" data-id="${x.a.id}" data-sid="${s ? s.id : ''}" data-d="${K}" data-tip="Registra o fim real e fecha ${s ? 'a etapa' : 'a atividade'} em 100%, mesmo antes do fim planejado">${ic('check')}Concluir ${D === T ? 'hoje' : 'em ' + fds(D)}</button>` : ''}
         <div class="dpart" hidden>${[25, 50, 75].map(n => `<button class="chipb ${v === n ? 'on' : ''}" data-act="dset" data-v="${n}">${n}%</button>`).join('')}<input class="inp dpct" type="number" min="1" max="99" step="1" placeholder="%" value="${st === 'parcial' && ![25, 50, 75].includes(v) ? v : ''}" aria-label="Percentual do dia">${st ? `<button class="chipb ghost" data-act="dset" data-v="">Limpar</button>` : ''}</div></div>
       <div class="dl-meter">
         <div class="dm-bar" data-tip="Real ${Math.round(real)}% · planejado até ${fds(D)}: ${plan}%"><i style="width:${Math.min(100, real).toFixed(1)}%"></i><b style="left:${plan}%"></b></div>

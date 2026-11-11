@@ -99,7 +99,31 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   ok(await p.$$eval('.tbl tr.row', e => e.some(r => /Concluída/.test(r.textContent))), '"Mostrar concluídas" traz as concluídas de volta');
   await p.close();
 
-  // 5. celular: barra de baixo e "Mais" com sair
+  // 5. diário: concluir antes do fim planejado fecha em 100% (responsável)
+  {
+    const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } }); const q = await ctx.newPage();
+    q.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+    await q.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};window.__DAILY__=1;\n${fake}` }));
+    await login(q, 'resp@teste.com'); await go(q, 'diario--' + FUP);
+    const real0 = await q.$eval('.drow[data-id="act-early"] .dm-txt b', e => e.textContent);
+    ok(await q.$('.drow[data-id="act-early"] [data-act="dfin"]') !== null, `diário mostra "Concluir hoje" para atividade em ${real0} que termina depois de hoje`);
+    await q.click('.drow[data-id="act-early"] [data-act="dset"][data-v="100"]'); await q.waitForTimeout(700);
+    ok((await q.$$eval('.toast', e => e.map(x => x.textContent).join(' '))).includes('Terminou antes do previsto'), 'marcar "Feito" hoje oferece concluir antes do previsto');
+    await q.click('.drow[data-id="act-early"] [data-act="dfin"]'); await q.waitForTimeout(900);
+    const a1 = await q.evaluate(() => window.__T__.docs.find(d => d.id === 'act-early').data);
+    ok(!!a1.fimReal, 'concluir registra o fim real hoje');
+    ok((await q.$eval('.drow[data-id="act-early"] .dm-txt b', e => e.textContent)) === '100%', 'atividade concluída aparece com 100% no diário');
+    await q.click('.drow[data-id="act-et"][data-sid="e1"] [data-act="dfin"]'); await q.waitForTimeout(900);
+    const e1 = await q.evaluate(() => window.__T__.docs.find(d => d.id === 'act-et').data.etapas[0]);
+    ok(!!e1.fimReal, 'etapa concluída antes do fim planejado');
+    ok((await q.$eval('.drow[data-id="act-et"][data-sid="e1"] .dm-txt b', e => e.textContent)) === '100%', 'etapa concluída aparece com 100% no diário');
+    await go(q, 'atividades--' + FUP); await q.check('#f-done').catch(() => {}); await q.waitForTimeout(300); await q.click('tr.row[data-id="act-early"]').catch(() => {}); await q.waitForTimeout(700);
+    const chip = await q.$eval('#drawer .dr-h .st', e => e.textContent).catch(() => '');
+    ok(/Concluída no prazo/.test(chip), `ficha mostra "${chip.trim()}"`);
+    await ctx.close();
+  }
+
+  // 6. celular: barra de baixo e "Mais" com sair
   p = await open(390, 844); await login(p, 'admin@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$eval('#mnav', e => getComputedStyle(e).display !== 'none' && e.querySelectorAll('a').length >= 4), 'barra de navegação embaixo no celular');
   await p.click('[data-act="m-more"]'); await p.waitForTimeout(400);

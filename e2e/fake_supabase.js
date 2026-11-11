@@ -21,6 +21,15 @@
     [['pagamento', '2026-10-05', 'Medição 1', 'Medição 1', '', 60000], ['pagamento', '2026-10-30', 'Medição 2', 'Medição 2', '', 85000], ['fd', '2026-10-12', 'Compra de 500 tijolos', 'Cerâmica Bom Jesus', '4471', 1250], ['fd', '2026-10-20', 'Cimento CP-II (80 sacos)', 'Depósito Central', '9902', 3120], ['aditivo', '2026-10-25', 'Aditivo 1 · troca de quadro elétrico', 'Termo aditivo 1', '', 18000]]
       .forEach(([tipo, data, descricao, fornecedor, nf, valor], i) => T.fin_itens.push({ id: 'fi-' + i, project_id: FUP, tipo, data, descricao, fornecedor, nf, valor, created_at: data + 'T12:00:00Z' }));
   }
+  if (window.__DAILY__) {
+    // projeto no modo diário com uma atividade e uma etapa que terminam depois de hoje
+    const iso = n => { const d = new Date(); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+    const m = T.docs.find(d => d.coll === 'metas' && d.id === FUP); m.data.modoDiario = true; m.data.diasUteis = false;
+    T.docs.push({ coll: 'atividades', id: 'act-early', data: { codigo: 'ATV-900', titulo: 'Pintura antecipada', metaId: FUP, respId: OWNER, peso: 1, iniPlan: iso(-2), fimPlan: iso(2), iniOrig: iso(-2), fimOrig: iso(2), iniReal: iso(-2), fimReal: '', progresso: null, diario: { [iso(-2)]: 100, [iso(-1)]: 100 }, replans: [], criadoEm: iso(-3) + 'T10:00:00Z' } });
+    T.docs.push({ coll: 'atividades', id: 'act-et', data: { codigo: 'ATV-901', titulo: 'Montagem com etapas', metaId: FUP, respId: OWNER, peso: 1, iniPlan: iso(-2), fimPlan: iso(3), iniOrig: iso(-2), fimOrig: iso(3), iniReal: iso(-2), iniAuto: true, fimReal: '', progresso: null, replans: [], criadoEm: iso(-3) + 'T10:00:00Z',
+      etapas: [{ id: 'e1', nome: 'Base', respId: '', peso: 1, iniPlan: iso(-2), fimPlan: iso(1), iniOrig: iso(-2), fimOrig: iso(1), iniReal: iso(-2), fimReal: '', diario: { [iso(-2)]: 100, [iso(-1)]: 100 }, replans: [], criadoEm: iso(-3) + 'T10:00:00Z' },
+               { id: 'e2', nome: 'Acabamento', respId: '', peso: 1, iniPlan: iso(2), fimPlan: iso(3), iniOrig: iso(2), fimOrig: iso(3), iniReal: '', fimReal: '', diario: {}, replans: [], criadoEm: iso(-3) + 'T10:00:00Z' }] } });
+  }
   const canFin = pid => { const p = T.profiles.find(x => x.id === me); return !!p && p.ativo && (p.role === 'admin' || T.project_members.some(m => m.user_id === me && m.project_id === pid && m.fin)); };
   const projOf = r => r.coll === 'metas' ? r.id : r.coll === 'atividades' || r.coll === 'eventos' ? (r.data.metaId || null) : r.coll === 'reunioes' ? (r.data.projetoId || null) : null;
   let me = null; window.__LOG__ = [];

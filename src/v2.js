@@ -376,3 +376,29 @@ window.addEventListener('hashchange', closePops);
 addEventListener('resize', () => { const b = $('#bellPop'); if (b && !b.hidden) closePops(); });
 // celular: cronograma abre na semana quando a pessoa ainda não escolheu o zoom
 try { if (innerWidth < 760 && !JSON.parse(localStorage.getItem(PREF_KEY) || '{}').zoom) S.zoom = 'semana'; } catch (e) {}
+
+/* ---------- concluir antes do fim planejado (diário) ----------
+   No diário, o avanço é a soma dos dias registrados ÷ dias planejados. Quem termina antes não
+   consegue marcar os dias futuros, então concluir registra o fim real e fecha em 100%. */
+async function finishAt(id, sid, K) {
+  const a = findAct(id); if (!a) return;
+  if (sid) { await subSetDates(id, sid, 'fim', K); refreshAfterFinish(id); return; }
+  if (!canLog(a, null)) { toast('Você só lança nas suas atividades e etapas.', 'warn'); return; }
+  const patch = { fimReal: K, atualizadoEm: nowISO() };
+  if (!a.iniReal) patch.iniReal = K;
+  if (a.progresso != null) patch.progresso = 100;
+  if (!(await write(() => db.doc('atividades/' + id).update(patch)))) return;
+  logEvt('edicao', a, `Concluída em ${fds(P(K))}`);
+  const fo = P(a.fimPlan), undo = () => write(() => db.doc('atividades/' + id).update({ fimReal: a.fimReal || '', iniReal: a.iniReal || '', progresso: a.progresso ?? null, atualizadoEm: nowISO() }));
+  if (P(K) <= fo) { celebrate(); toast(`${a.codigo} concluída em 100%, ${P(K) < fo ? 'antes do' : 'dentro do'} prazo planejado.`, 'ok', 'Desfazer', undo); }
+  else toast(`${a.codigo} concluída com ${fdelta(dd(fo, P(K)))} de atraso em relação ao plano atual.`, 'warn', 'Desfazer', undo);
+  refreshAfterFinish(id);
+}
+function refreshAfterFinish(id) {
+  setTimeout(() => { const doc = findAct(id); if (!doc) return; if (S.editing && S.editing.id === id) { refreshDrawerSubs(doc); const box = $('#a-daily'); if (box) box.innerHTML = dailyBoxHTML(doc); } }, 150);
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act="dfin"]'); if (!t) return;
+  e.stopPropagation(); t.disabled = true;
+  finishAt(t.dataset.id, t.dataset.sid || null, t.dataset.d).finally(() => { if (t.isConnected) t.disabled = false; });
+});

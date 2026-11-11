@@ -233,3 +233,7 @@
   .fval{font-size:18px!important}
   .pop{max-height:calc(100dvh - 120px)}
 }
+
+/* diário: concluir antes do fim planejado */
+.dl-act .dfin{margin-top:8px;align-self:flex-start}
+.dl-act .dfin-ok{margin-top:8px;align-self:flex-start}
