@@ -328,11 +328,11 @@ async function exportBackup() {
   try {
     const docs = []; let from = 0;
     for (;;) { const { data, error } = await sb.from('docs').select('coll,id,data').order('coll').order('id').range(from, from + 999); if (error) throw error; docs.push(...data); if (data.length < 1000) break; from += 1000; }
-    const [fc, fi] = await Promise.all([sb.from('fin_contratos').select('*'), sb.from('fin_itens').select('*')]);
-    if (fc.error || fi.error) throw (fc.error || fi.error);
-    const out = { versao: 2, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs, fin_contratos: fc.data || [], fin_itens: fi.data || [] };
+    const [fc, fi, fv] = await Promise.all([sb.from('fin_contratos').select('*'), sb.from('fin_itens').select('*'), sb.from('fin_valores').select('*')]);
+    if (fc.error || fi.error || fv.error) throw (fc.error || fi.error || fv.error);
+    const out = { versao: 3, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs, fin_contratos: fc.data || [], fin_itens: fi.data || [], fin_valores: fv.data || [] };
     await downloads.save({ filename: `backup-controle-de-projetos-${ISO(today())}.json`, data: new Blob([JSON.stringify(out)], { type: 'application/json' }) });
-    dismissToast(t); toast(`Backup gerado: ${docs.length + out.fin_itens.length + out.fin_contratos.length} registros.`, 'ok');
+    dismissToast(t); toast(`Backup gerado: ${docs.length + out.fin_itens.length + out.fin_contratos.length + out.fin_valores.length} registros.`, 'ok');
   } catch (e) { dismissToast(t); toast('Não foi possível gerar o backup.', 'err'); }
 }
 function openRestore() {
@@ -346,8 +346,9 @@ function openRestore() {
       if (!docs.length && !(Array.isArray(j.fin_itens) && j.fin_itens.length)) throw 0;
       const cnt = {}; docs.forEach(d => cnt[d.coll] = (cnt[d.coll] || 0) + 1);
       const fc = Array.isArray(j.fin_contratos) ? j.fin_contratos.filter(x => x && x.project_id) : [], fi = Array.isArray(j.fin_itens) ? j.fin_itens.filter(x => x && x.id && x.project_id) : [];
-      if (fc.length) cnt.fin_contratos = fc.length; if (fi.length) cnt.fin_itens = fi.length;
-      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração', fin_contratos: 'contratos (financeiro)', fin_itens: 'lançamentos financeiros' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
+      const fv = Array.isArray(j.fin_valores) ? j.fin_valores.filter(x => x && x.project_id && x.atividade_id) : [];
+      if (fc.length) cnt.fin_contratos = fc.length; if (fi.length) cnt.fin_itens = fi.length; if (fv.length) cnt.fin_valores = fv.length;
+      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração', fin_contratos: 'contratos (financeiro)', fin_itens: 'lançamentos financeiros', fin_valores: 'valores por atividade' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
       $('#modal .md-f').innerHTML = `<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="button" class="btn primary" id="rs-go">Restaurar agora</button>`;
       $('#rs-go').onclick = async () => {
         $('#rs-go').disabled = true; const order = ['config', 'metas', 'pessoas', 'atividades', 'reunioes', 'eventos'];
@@ -359,6 +360,7 @@ function openRestore() {
         const strip = x => { const y = { ...x }; delete y.created_at; delete y.created_by; delete y.updated_at; delete y.updated_by; return y; };
         if (fc.length) { const r = await sb.from('fin_contratos').upsert(fc.map(strip), { onConflict: 'project_id' }); if (r.error) bad += fc.length; else done += fc.length; }
         for (let i = 0; i < fi.length; i += 200) { const part = fi.slice(i, i + 200), r = await sb.from('fin_itens').upsert(part.map(strip), { onConflict: 'id' }); if (r.error) bad += part.length; else done += part.length; }
+        if (fv.length) { const r = await sb.from('fin_valores').upsert(fv.map(x => { const y = { ...x }; delete y.updated_at; delete y.updated_by; return y; }), { onConflict: 'project_id,atividade_id,etapa_id' }); if (r.error) bad += fv.length; else done += fv.length; }
         S.finD = {}; S.finR = {};
         try { await db.reloadAll(); } catch (e) {}
         $('#rs-b').innerHTML = `<div class="empty" style="padding:14px 0"><h3>${bad ? 'Restauração com avisos' : 'Restauração concluída'}</h3><p>${done} registros gravados${bad ? ` · ${bad} não puderam ser gravados` : ''}.</p></div>`;

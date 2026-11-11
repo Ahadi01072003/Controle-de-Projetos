@@ -20,7 +20,7 @@ R("s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';", "
 # ---------- 2. estado e permissões ----------
 R("open: new Set(), reunioes: [], rep: null,", "open: new Set(), reunioes: [], rep: null, lv: {}, me: null, isAdmin: false, started: false,")
 cut("async function write(fn, quiet = false) {", "/* ===================== UI: eventos, tooltip, toast, confete ===================== */")
-s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + '\n' + part('v2.js') + '\n' + part('financeiro.js') + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
+s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + '\n' + part('v2.js') + '\n' + part('financeiro.js') + '\n' + part('fin_ativ.js') + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
 R("S.canWrite", "S.canWrite", s.count("S.canWrite"))  # no-op guard (mantém contagem)
 R("boot();\n</script>", "authInit();\n</script>")
 

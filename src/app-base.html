@@ -2337,6 +2337,7 @@ function openAct(id, preset = {}) {
           <span class="hint">Na opção automática, a situação é calculada comparando as datas reais com o plano atual. As variações continuam medidas contra a data original.</span></div>
       </fieldset>
       ${a ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
+      ${a && finVisible(a.metaId) ? `<fieldset class="box fin-box" id="a-fin">${finActBox(a.id)}</fieldset>` : ''}
       ${a && c && c.di && !c.subs ? `<fieldset class="box" id="a-daily">${dailyBoxHTML(a)}</fieldset>` : ''}
       <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${dis} maxlength="2000">${esc(d.obs || '')}</textarea></div>
       ${hist}

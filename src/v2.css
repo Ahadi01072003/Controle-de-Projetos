@@ -237,3 +237,69 @@
 /* diário: concluir antes do fim planejado */
 .dl-act .dfin{margin-top:8px;align-self:flex-start}
 .dl-act .dfin-ok{margin-top:8px;align-self:flex-start}
+
+/* financeiro por atividade */
+.fin-k{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fin-k .kpi:nth-child(3n){border-right:1px solid var(--line)}
+.fin-k .kpi:nth-child(4n){border-right:0}
+.fin-k .kpi:nth-last-child(-n+4){border-bottom:0}
+.fa-top{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.fa-top .sp{flex:1}
+.fa-dist{display:inline-flex;gap:8px;align-items:center;font-size:13px;padding:7px 12px;border-radius:10px;background:var(--surface-2)}
+.fa-dist .ic{width:16px;height:16px}
+.fa-dist.ok .ic{color:var(--good-ink)}
+.fa-dist.warn{background:color-mix(in srgb,var(--st-risk) 14%,var(--surface))}
+.fa-dist.warn .ic{color:#a86d00}
+.fa-hint{font-size:12.5px;margin:0 0 12px}
+table.tbl.fatbl{min-width:0;width:100%}
+.fatbl th,.fatbl td{padding:7px 8px}
+.fatbl .mono{white-space:nowrap;font-size:11.5px}
+.fatbl td{vertical-align:middle}
+.fatbl .fv{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fatbl th:nth-child(2){width:150px}
+.fatbl .fv{font-size:12.5px}
+.fatbl tfoot td{padding:10px 12px;background:var(--surface-2)}
+.fa-name{display:flex;gap:8px;align-items:center;min-width:0}
+.fa-name b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+.fa-n{font-size:12px;white-space:nowrap}
+.fa-sub td{background:var(--surface-2);font-size:13px}
+.fa-sub .fa-name{padding-left:8px}
+.fa-geral td{font-size:12.5px;color:var(--ink-2);background:var(--surface-2)}
+.fa-row.warn td{background:color-mix(in srgb,var(--st-risk) 8%,transparent)}
+.fa-warn{font-size:11.5px;color:#a86d00;margin:2px 0 0 30px}
+.chev-b{border:0;background:none;width:22px;height:22px;display:grid;place-items:center;border-radius:6px;color:var(--muted);padding:0;flex:none}
+.chev-b:hover{background:var(--sunken)}
+.chev-b .ic{width:15px;height:15px;transition:transform .2s}
+.chev-b.open .ic{transform:rotate(90deg)}
+.chev-sp{width:22px;flex:none}
+.fvw{display:flex;align-items:center;gap:4px}
+.fvin{height:30px;width:112px;padding:0 7px;font-size:12.5px}
+.fvin:not(.man){background:transparent;border-style:dashed}
+.fvin:not(.man)::placeholder{color:var(--ink-2);font-style:italic}
+.fvin.man{font-weight:600}
+.fvin.saved{animation:flash 1.2s ease}
+.fv-auto{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.fv-x{border:0;background:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--muted);padding:0}
+.fv-x:hover{background:var(--sunken);color:var(--bad-ink)}
+.fv-x .ic{width:13px;height:13px}
+.fv-sum{font-weight:600;padding:0 8px}
+.fa-f{white-space:nowrap}
+.fa-f .fbar{display:inline-block;vertical-align:middle;width:44px;height:6px;border-radius:99px;background:var(--sunken);overflow:hidden;margin-right:6px}
+.fa-f .fbar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+.fref{font-size:12.5px;max-width:240px}
+.md-tw{max-height:46vh;box-shadow:none}
+table.tbl.mdtbl{min-width:0;width:100%;table-layout:fixed}
+.mdtbl td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mdtbl td{padding:6px 10px}
+.mdtbl .md-v{height:32px;width:100%}
+.md-tot{text-align:right;font-size:14px;margin-top:8px}
+.fin-box .fa-mini{margin-top:8px}
+.fin-box .fa-mini li{font-size:12.5px;padding:6px 0}
+.fin-box .fa-mini .fv{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.fa-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media (max-width:900px){.fin-k{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-k .kpi:nth-child(4n){border-right:1px solid var(--line)}.fin-k .kpi:nth-child(2n){border-right:0}.fin-k .kpi:nth-last-child(-n+4){border-bottom:1px solid var(--line)}.fin-k .kpi:nth-last-child(-n+2){border-bottom:0}}
+@media (max-width:760px){.fvin{width:100%}.fa-name b{max-width:none;white-space:normal}.fa-f .fbar{width:80px}}
+.fin-box .dstats.sm{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fin-box .dstats.sm b{font-size:16px;white-space:nowrap}
+@media (max-width:1180px){.fa-name b{max-width:180px}}
+.fd-m{font-size:9px;font-weight:700;color:var(--muted);margin-left:3px;letter-spacing:.04em}

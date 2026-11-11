@@ -37,9 +37,10 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   await go(p, 'financeiro--' + FUP);
   const progGraf = await p.$eval('#fgap b', e => e.textContent.trim());
   ok(progGraf === progPainel, `avanço real do gráfico igual ao Progresso geral do painel (${progGraf} = ${progPainel})`);
-  ok(await p.$$eval('#fchart svg path.draw', e => e.length) === 2, 'gráfico só com avanço real e avanço pago');
-  const aPagar = async () => p.$eval('.fin-k .kpi:nth-child(6) .val', e => e.textContent.trim());
+  ok(await p.$$eval('#fchart svg path.draw', e => e.length) === 3, 'gráfico com avanço real, executado e pago');
+  const aPagar = async () => p.$eval('.fin-k .kpi:nth-child(8) .val', e => e.textContent.trim());
   const before = await aPagar();
+  await p.click('[data-act="fin-tab"][data-t="pagamento"]'); await p.waitForTimeout(300);
   await p.click('[data-act="fin-new"]'); await p.waitForTimeout(400);
   await p.fill('#fi-ds', 'Medição 3'); await p.fill('#fi-v', '10.000,00'); await p.click('#ffi button[type=submit]'); await p.waitForTimeout(900);
   const after = await aPagar(); const num = s => +s.replace(/[^\d,-]/g, '').replace(',', '.');
@@ -57,6 +58,39 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   ok(await T(p, () => window.__T__.fin_log.filter(l => l.acao === 'delete').length) === 1, 'exclusão registrada no histórico');
   await p.click('[data-act="fin-tab"][data-t="log"]'); await p.waitForTimeout(300);
   ok(await p.$$eval('.fin-log li', e => e.length) >= 4, 'aba Histórico lista as alterações');
+  await p.close();
+
+  // 2b. financeiro por atividade: valores fecham com o contrato, medição, ficha
+  p = await open(); await login(p, 'gestor@teste.com'); await go(p, 'financeiro--' + FUP);
+  ok(await p.$('.fatbl') !== null, 'aba "Por atividade" abre por padrão');
+  ok(await p.$('.fa-dist.ok') !== null, 'sem valores definidos, a distribuição automática fecha com o contrato');
+  const firstAid = await p.$eval('.fatbl .fvin', e => e.dataset.a);
+  await p.fill(`.fvin[data-a="${firstAid}"][data-s=""]`, '50.000,00'); await p.press(`.fvin[data-a="${firstAid}"][data-s=""]`, 'Enter'); await p.waitForTimeout(900);
+  ok(await T(p, a => window.__T__.fin_valores.some(v => v.atividade_id === a && +v.valor === 50000), firstAid), 'valor digitado gravado para a atividade');
+  ok(await p.$('.fa-dist.ok') !== null, 'com um valor fixo, o resto se redistribui e continua fechando');
+  ok(await p.$(`.fvin.man[data-a="${firstAid}"]`) !== null, 'atividade fica marcada como valor definido');
+  await p.uncheck('#fin-auto'); await p.waitForTimeout(900);
+  ok(await p.$('.fa-dist.warn') !== null, 'desligar a distribuição automática mostra quanto falta distribuir');
+  await p.check('#fin-auto'); await p.waitForTimeout(900);
+  const execTot = await p.$eval('.fatbl tfoot td:nth-child(4)', e => e.textContent.trim());
+  await p.click('[data-act="fin-med"] >> nth=0'); await p.waitForTimeout(500);
+  const sug = await p.$$eval('.md-ck:checked', e => e.length);
+  ok(sug > 0, `medição sugere ${sug} atividade(s) executada(s) e não paga(s) (executado total ${execTot})`);
+  const nMed = await p.inputValue('#md-n');
+  await p.click('#fmd button[type=submit]'); await p.waitForTimeout(1000);
+  const lig = await T(p, n => window.__T__.fin_itens.filter(i => i.medicao === n && i.atividade_id).length, nMed);
+  ok(lig === sug, `medição ${nMed} gerou ${lig} pagamentos ligados às atividades`);
+  await p.click('[data-act="fin-med"] >> nth=0'); await p.waitForTimeout(500);
+  ok(await p.$$eval('.md-ck:checked', e => e.length) === 0, 'depois de medir, não sobra nada a medir');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+  await go(p, 'atividades--' + FUP); await p.check('#f-done').catch(() => {}); await p.waitForTimeout(300);
+  await p.click(`tr.row[data-id="${firstAid}"]`); await p.waitForTimeout(900);
+  const box = await p.$eval('#a-fin', e => e.textContent).catch(() => '');
+  ok(/Valor/.test(box) && /50\.000,00/.test(box), 'ficha da atividade mostra o quadro financeiro com o valor definido');
+  await p.close();
+  p = await open(); await login(p, 'leitor@teste.com'); await go(p, 'atividades--' + FUP); await p.check('#f-done').catch(() => {}); await p.waitForTimeout(300);
+  await p.click(`tr.row[data-id="${firstAid}"]`).catch(() => {}); await p.waitForTimeout(700);
+  ok(await p.$('#a-fin') === null, 'quem não tem acesso financeiro não vê o quadro na ficha');
   await p.close();
 
   // 3. leitor sem financeiro: vê só os totais

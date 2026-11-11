@@ -1089,6 +1089,72 @@ fieldset.box legend{padding:0 6px;font-size:12px;font-weight:700;letter-spacing:
 .dl-act .dfin{margin-top:8px;align-self:flex-start}
 .dl-act .dfin-ok{margin-top:8px;align-self:flex-start}
 
+/* financeiro por atividade */
+.fin-k{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fin-k .kpi:nth-child(3n){border-right:1px solid var(--line)}
+.fin-k .kpi:nth-child(4n){border-right:0}
+.fin-k .kpi:nth-last-child(-n+4){border-bottom:0}
+.fa-top{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.fa-top .sp{flex:1}
+.fa-dist{display:inline-flex;gap:8px;align-items:center;font-size:13px;padding:7px 12px;border-radius:10px;background:var(--surface-2)}
+.fa-dist .ic{width:16px;height:16px}
+.fa-dist.ok .ic{color:var(--good-ink)}
+.fa-dist.warn{background:color-mix(in srgb,var(--st-risk) 14%,var(--surface))}
+.fa-dist.warn .ic{color:#a86d00}
+.fa-hint{font-size:12.5px;margin:0 0 12px}
+table.tbl.fatbl{min-width:0;width:100%}
+.fatbl th,.fatbl td{padding:7px 8px}
+.fatbl .mono{white-space:nowrap;font-size:11.5px}
+.fatbl td{vertical-align:middle}
+.fatbl .fv{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fatbl th:nth-child(2){width:150px}
+.fatbl .fv{font-size:12.5px}
+.fatbl tfoot td{padding:10px 12px;background:var(--surface-2)}
+.fa-name{display:flex;gap:8px;align-items:center;min-width:0}
+.fa-name b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+.fa-n{font-size:12px;white-space:nowrap}
+.fa-sub td{background:var(--surface-2);font-size:13px}
+.fa-sub .fa-name{padding-left:8px}
+.fa-geral td{font-size:12.5px;color:var(--ink-2);background:var(--surface-2)}
+.fa-row.warn td{background:color-mix(in srgb,var(--st-risk) 8%,transparent)}
+.fa-warn{font-size:11.5px;color:#a86d00;margin:2px 0 0 30px}
+.chev-b{border:0;background:none;width:22px;height:22px;display:grid;place-items:center;border-radius:6px;color:var(--muted);padding:0;flex:none}
+.chev-b:hover{background:var(--sunken)}
+.chev-b .ic{width:15px;height:15px;transition:transform .2s}
+.chev-b.open .ic{transform:rotate(90deg)}
+.chev-sp{width:22px;flex:none}
+.fvw{display:flex;align-items:center;gap:4px}
+.fvin{height:30px;width:112px;padding:0 7px;font-size:12.5px}
+.fvin:not(.man){background:transparent;border-style:dashed}
+.fvin:not(.man)::placeholder{color:var(--ink-2);font-style:italic}
+.fvin.man{font-weight:600}
+.fvin.saved{animation:flash 1.2s ease}
+.fv-auto{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.fv-x{border:0;background:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--muted);padding:0}
+.fv-x:hover{background:var(--sunken);color:var(--bad-ink)}
+.fv-x .ic{width:13px;height:13px}
+.fv-sum{font-weight:600;padding:0 8px}
+.fa-f{white-space:nowrap}
+.fa-f .fbar{display:inline-block;vertical-align:middle;width:44px;height:6px;border-radius:99px;background:var(--sunken);overflow:hidden;margin-right:6px}
+.fa-f .fbar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+.fref{font-size:12.5px;max-width:240px}
+.md-tw{max-height:46vh;box-shadow:none}
+table.tbl.mdtbl{min-width:0;width:100%;table-layout:fixed}
+.mdtbl td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mdtbl td{padding:6px 10px}
+.mdtbl .md-v{height:32px;width:100%}
+.md-tot{text-align:right;font-size:14px;margin-top:8px}
+.fin-box .fa-mini{margin-top:8px}
+.fin-box .fa-mini li{font-size:12.5px;padding:6px 0}
+.fin-box .fa-mini .fv{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.fa-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media (max-width:900px){.fin-k{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-k .kpi:nth-child(4n){border-right:1px solid var(--line)}.fin-k .kpi:nth-child(2n){border-right:0}.fin-k .kpi:nth-last-child(-n+4){border-bottom:1px solid var(--line)}.fin-k .kpi:nth-last-child(-n+2){border-bottom:0}}
+@media (max-width:760px){.fvin{width:100%}.fa-name b{max-width:none;white-space:normal}.fa-f .fbar{width:80px}}
+.fin-box .dstats.sm{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fin-box .dstats.sm b{font-size:16px;white-space:nowrap}
+@media (max-width:1180px){.fa-name b{max-width:180px}}
+.fd-m{font-size:9px;font-weight:700;color:var(--muted);margin-left:3px;letter-spacing:.04em}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
@@ -2633,6 +2699,7 @@ function openAct(id, preset = {}) {
           <span class="hint">Na opção automática, a situação é calculada comparando as datas reais com o plano atual. As variações continuam medidas contra a data original.</span></div>
       </fieldset>
       ${a ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
+      ${a && finVisible(a.metaId) ? `<fieldset class="box fin-box" id="a-fin">${finActBox(a.id)}</fieldset>` : ''}
       ${a && c && c.di && !c.subs ? `<fieldset class="box" id="a-daily">${dailyBoxHTML(a)}</fieldset>` : ''}
       <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${dis} maxlength="2000">${esc(d.obs || '')}</textarea></div>
       ${hist}
@@ -3526,11 +3593,11 @@ async function exportBackup() {
   try {
     const docs = []; let from = 0;
     for (;;) { const { data, error } = await sb.from('docs').select('coll,id,data').order('coll').order('id').range(from, from + 999); if (error) throw error; docs.push(...data); if (data.length < 1000) break; from += 1000; }
-    const [fc, fi] = await Promise.all([sb.from('fin_contratos').select('*'), sb.from('fin_itens').select('*')]);
-    if (fc.error || fi.error) throw (fc.error || fi.error);
-    const out = { versao: 2, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs, fin_contratos: fc.data || [], fin_itens: fi.data || [] };
+    const [fc, fi, fv] = await Promise.all([sb.from('fin_contratos').select('*'), sb.from('fin_itens').select('*'), sb.from('fin_valores').select('*')]);
+    if (fc.error || fi.error || fv.error) throw (fc.error || fi.error || fv.error);
+    const out = { versao: 3, origem: 'Controle de Projetos', geradoEm: ISO(today()), docs, fin_contratos: fc.data || [], fin_itens: fi.data || [], fin_valores: fv.data || [] };
     await downloads.save({ filename: `backup-controle-de-projetos-${ISO(today())}.json`, data: new Blob([JSON.stringify(out)], { type: 'application/json' }) });
-    dismissToast(t); toast(`Backup gerado: ${docs.length + out.fin_itens.length + out.fin_contratos.length} registros.`, 'ok');
+    dismissToast(t); toast(`Backup gerado: ${docs.length + out.fin_itens.length + out.fin_contratos.length + out.fin_valores.length} registros.`, 'ok');
   } catch (e) { dismissToast(t); toast('Não foi possível gerar o backup.', 'err'); }
 }
 function openRestore() {
@@ -3544,8 +3611,9 @@ function openRestore() {
       if (!docs.length && !(Array.isArray(j.fin_itens) && j.fin_itens.length)) throw 0;
       const cnt = {}; docs.forEach(d => cnt[d.coll] = (cnt[d.coll] || 0) + 1);
       const fc = Array.isArray(j.fin_contratos) ? j.fin_contratos.filter(x => x && x.project_id) : [], fi = Array.isArray(j.fin_itens) ? j.fin_itens.filter(x => x && x.id && x.project_id) : [];
-      if (fc.length) cnt.fin_contratos = fc.length; if (fi.length) cnt.fin_itens = fi.length;
-      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração', fin_contratos: 'contratos (financeiro)', fin_itens: 'lançamentos financeiros' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
+      const fv = Array.isArray(j.fin_valores) ? j.fin_valores.filter(x => x && x.project_id && x.atividade_id) : [];
+      if (fc.length) cnt.fin_contratos = fc.length; if (fi.length) cnt.fin_itens = fi.length; if (fv.length) cnt.fin_valores = fv.length;
+      $('#rs-b').innerHTML = `<p><b>${docs.length} registros</b> encontrados:</p><ul class="rs-list">${Object.entries(cnt).map(([k, n]) => `<li>${n} ${({ atividades: 'atividades', metas: 'projetos', pessoas: 'responsáveis', reunioes: 'reuniões fechadas', eventos: 'eventos do histórico', config: 'configuração', fin_contratos: 'contratos (financeiro)', fin_itens: 'lançamentos financeiros', fin_valores: 'valores por atividade' })[k]}</li>`).join('')}</ul><div class="pbar"><i id="rs-pb"></i></div><p class="muted" id="rs-st" style="font-size:12.5px"></p>`;
       $('#modal .md-f').innerHTML = `<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="button" class="btn primary" id="rs-go">Restaurar agora</button>`;
       $('#rs-go').onclick = async () => {
         $('#rs-go').disabled = true; const order = ['config', 'metas', 'pessoas', 'atividades', 'reunioes', 'eventos'];
@@ -3557,6 +3625,7 @@ function openRestore() {
         const strip = x => { const y = { ...x }; delete y.created_at; delete y.created_by; delete y.updated_at; delete y.updated_by; return y; };
         if (fc.length) { const r = await sb.from('fin_contratos').upsert(fc.map(strip), { onConflict: 'project_id' }); if (r.error) bad += fc.length; else done += fc.length; }
         for (let i = 0; i < fi.length; i += 200) { const part = fi.slice(i, i + 200), r = await sb.from('fin_itens').upsert(part.map(strip), { onConflict: 'id' }); if (r.error) bad += part.length; else done += part.length; }
+        if (fv.length) { const r = await sb.from('fin_valores').upsert(fv.map(x => { const y = { ...x }; delete y.updated_at; delete y.updated_by; return y; }), { onConflict: 'project_id,atividade_id,etapa_id' }); if (r.error) bad += fv.length; else done += fv.length; }
         S.finD = {}; S.finR = {};
         try { await db.reloadAll(); } catch (e) {}
         $('#rs-b').innerHTML = `<div class="empty" style="padding:14px 0"><h3>${bad ? 'Restauração com avisos' : 'Restauração concluída'}</h3><p>${done} registros gravados${bad ? ` · ${bad} não puderam ser gravados` : ''}.</p></div>`;
@@ -4045,21 +4114,22 @@ const finOn = pid => !!(pid && pid !== '_none' && (metaById(pid) || {}).financei
 const finVisible = pid => finOn(pid) && canFin(pid);
 const finCalc = (contrato, aditivos, fd, pago) => { const aj = (+contrato || 0) + (+aditivos || 0) - (+fd || 0); return { contrato: +contrato || 0, aditivos: +aditivos || 0, fd: +fd || 0, pago: +pago || 0, aj, aPagar: aj - (+pago || 0), pct: aj > 0 ? (+pago || 0) / aj * 100 : 0 }; };
 const FT = { pagamento: { l: 'Pagamentos', one: 'pagamento', novo: 'Novo pagamento', ic: 'check' }, fd: { l: 'Faturamento direto', one: 'compra de faturamento direto', novo: 'Nova compra (FD)', ic: 'down' }, aditivo: { l: 'Aditivos', one: 'aditivo', novo: 'Novo aditivo', ic: 'plus' } };
-S.finD = {}; S.finR = {}; S.finTab = 'pagamento'; S.finQ = '';
+S.finD = {}; S.finR = {}; S.finTab = 'ativ'; S.finQ = '';
 
 async function loadFin(pid, force) {
   const D = S.finD[pid] || (S.finD[pid] = { loaded: false, loading: false });
   if (D.loading || (D.loaded && !force)) return;
   D.loading = true;
   try {
-    const [c, i, l] = await Promise.all([
+    const [c, i, l, v] = await Promise.all([
       sb.from('fin_contratos').select('*').eq('project_id', pid).maybeSingle(),
       sb.from('fin_itens').select('*').eq('project_id', pid).order('data', { ascending: false }),
-      sb.from('fin_log').select('*').eq('project_id', pid).order('em', { ascending: false }).limit(80)]);
-    if (c.error || i.error || l.error) throw (c.error || i.error || l.error);
-    Object.assign(D, { contrato: c.data || null, itens: (i.data || []).map(x => ({ ...x, valor: +x.valor })), log: l.data || [], loaded: true, err: false });
+      sb.from('fin_log').select('*').eq('project_id', pid).order('em', { ascending: false }).limit(80),
+      sb.from('fin_valores').select('*').eq('project_id', pid)]);
+    if (c.error || i.error || l.error || v.error) throw (c.error || i.error || l.error || v.error);
+    Object.assign(D, { contrato: c.data || null, itens: (i.data || []).map(x => ({ ...x, valor: +x.valor })), log: l.data || [], valores: (v.data || []).map(x => ({ ...x, valor: +x.valor })), loaded: true, err: false, v: (D.v || 0) + 1 });
   } catch (e) { D.err = true; }
-  D.loading = false; S.finR[pid] = null; schedule();
+  D.loading = false; S.finR[pid] = null; schedule(); refreshFinBox();
 }
 async function loadFinRes(pid) {
   const R = S.finR[pid];
@@ -4082,7 +4152,7 @@ function finAlerts(k) {
 }
 
 /* ---------- curva físico × financeiro (mesmo desenho da Curva S do painel) ---------- */
-function drawFinChart(host, pid, pagamentos, aj) {
+function drawFinChart(host, pid, pagamentos, aj, ex = null) {
   const L = live(allActs().filter(x => x.a.metaId === pid)), T = today();
   const pays = pagamentos.map(p => ({ d: P(String(p.d).slice(0, 10)), v: +p.v || 0 })).filter(p => p.d != null).sort((a, b) => a.d - b.d);
   if (!L.length && !pays.length) { host.innerHTML = '<p class="muted">O gráfico aparece quando houver atividades ou pagamentos.</p>'; return; }
@@ -4104,7 +4174,8 @@ function drawFinChart(host, pid, pagamentos, aj) {
     return c.ir != null && c.ir <= d && T > c.ir ? v * (d - c.ir) / (T - c.ir) : 0;
   };
   const fisAt = d => L.reduce((t, x) => t + (+x.a.peso || 1) * valAt(x, d), 0) / Wt;
-  const pts = days.filter(d => d <= T).map(d => ({ d, real: fisAt(d) }));
+  const exAt = d => ex ? ex.rows.reduce((t, r) => t + r.valor * valAt(r.x, d), 0) / ex.base : 0;
+  const pts = days.filter(d => d <= T).map(d => ({ d, real: fisAt(d), ex: exAt(d) }));
   const pctPago = d => aj > 0 ? cum(d) / aj : 0;
   const top = Math.max(1, Math.ceil(Math.max(...pays.map(p => pctPago(p.d)), 0) * 4) / 4);
   const Wd = host.clientWidth || 600, H = 250, m = { l: 40, r: Wd < 520 ? 14 : 78, t: 12, b: 26 }, iw = Wd - m.l - m.r, ih = H - m.t - m.b;
@@ -4122,15 +4193,16 @@ function drawFinChart(host, pid, pagamentos, aj) {
   else { for (let d = lo; d <= hi; d++) { const dt = Dt(d); if (dt.getUTCDate() === 1) xT.push({ d, l: MES[dt.getUTCMonth()] + (dt.getUTCMonth() === 0 ? ' ' + dt.getUTCFullYear() : '') }); } }
   if (span > 300) xT = xT.filter((_, i) => i % 2 === 0);
   const rNow = L.length ? metaStats(pid, allActs()).prog / 100 : 0, fNow = pctPago(T); // igual ao "Progresso geral" do painel
-  if (pts.length) pts[pts.length - 1].real = rNow;
+  const eNow = ex ? ex.now : 0;
+  if (pts.length) { pts[pts.length - 1].real = rNow; pts[pts.length - 1].ex = eNow; }
   const gapEl = document.getElementById('fgap');
   if (gapEl) {
     const pp = v => Math.round(v * 100), gd = pp(fNow) - pp(rNow), warn = gd > 10;
     gapEl.innerHTML = `<span>Hoje: avanço real <b>${pp(rNow)}%</b> · pago <b>${pp(fNow)}%</b> do valor ajustado (${brl(cum(T))}).</span><span>Pago − real <b class="${warn ? 'neg' : gd < -10 ? '' : 'pos'}">${gd > 0 ? '+' : gd < 0 ? '−' : ''}${Math.abs(gd)} p.p.</b>${warn ? ' · pagamentos à frente da obra' : gd < -10 ? ' · pagamentos atrás da obra' : ' · em linha'}</span>`;
   }
   // rótulos do dia de hoje sem sobrepor
-  let yR = Y(rNow), yF = Y(fNow);
-  if (Math.abs(yR - yF) < 16) { const mid = (yR + yF) / 2, up = yR <= yF; yR = mid + (up ? -8 : 8); yF = mid + (up ? 8 : -8); }
+  const labs = [L.length ? { y: Y(rNow), t: Math.round(rNow * 100) + '% real', c: 'var(--ink)' } : null, ex ? { y: Y(eNow), t: Math.round(eNow * 100) + '% executado', c: 'var(--accent)' } : null, { y: Y(fNow), t: Math.round(fNow * 100) + '% pago', c: 'var(--fin)' }].filter(Boolean).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 15) labs[i].y = labs[i - 1].y + 15;
   const right = X(T) > Wd - (Wd < 520 ? 90 : 150), lx = right ? X(T) - 10 : X(T) + 10, anc = right ? 'end' : 'start';
   const lbl = (y, txt, c) => `<text x="${lx}" y="${y + 4}" text-anchor="${anc}" style="font-size:12px;font-weight:700;fill:${c};paint-order:stroke;stroke:var(--surface);stroke-width:4px">${txt}</text>`;
   host.innerHTML = `<svg width="${Wd}" height="${H}" role="img" aria-label="Físico e financeiro: físico ${Math.round(rNow * 100)}%, pago ${Math.round(fNow * 100)}% até hoje">
@@ -4142,21 +4214,24 @@ function drawFinChart(host, pid, pagamentos, aj) {
     <text x="${X(T)}" y="${m.t + 10}" text-anchor="middle" style="font-size:10.5px;font-weight:700;fill:var(--accent);paint-order:stroke;stroke:var(--surface);stroke-width:4px">Hoje</text>
     <path d="${area}" fill="url(#fgrad)" class="fadein"/>
     <path class="draw" pathLength="1" stroke-dasharray="1" d="${sp}" fill="none" stroke="var(--fin)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    ${ex ? `<path class="draw" pathLength="1" stroke-dasharray="1" d="${line('ex', T)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
     ${L.length ? `<path class="draw" pathLength="1" stroke-dasharray="1" d="${line('real', T)}" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
     ${pays.filter(p => p.d <= hi).map(p => `<circle cx="${X(p.d)}" cy="${Y(pctPago(p.d))}" r="2.6" fill="var(--fin)" class="fadein"/>`).join('')}
+    ${ex ? `<circle cx="${X(T)}" cy="${Y(eNow)}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>` : ''}
     ${L.length ? `<circle cx="${X(T)}" cy="${Y(rNow)}" r="4.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>` : ''}
     <circle cx="${X(T)}" cy="${Y(fNow)}" r="4.5" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/>
-    ${L.length ? lbl(yR, Math.round(rNow * 100) + '% real', 'var(--ink)') : ''}${lbl(yF, Math.round(fNow * 100) + '% pago', 'var(--fin)')}
-    <g id="fx" style="display:none"><line y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-width="1"/><circle r="4" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/><circle r="4" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/></g>
+    ${labs.map(l => lbl(l.y, l.t, l.c)).join('')}
+    <g id="fx" style="display:none"><line y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-width="1"/><circle r="4" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/><circle r="4" fill="var(--fin)" stroke="var(--surface)" stroke-width="2"/><circle r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/></g>
     <rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="fhit"/></svg>`;
   const svg = host.querySelector('svg'), g = svg.querySelector('#fx'), hit = svg.querySelector('#fhit');
   hit.addEventListener('pointermove', e => {
     const r = svg.getBoundingClientRect(), d = Math.max(lo, Math.min(hi, Math.round(lo + (e.clientX - r.left - m.l) / iw * (hi - lo))));
-    const re = d <= T && L.length ? (d === T ? rNow : fisAt(d)) : null, fi = d <= pEnd ? pctPago(d) : null, x = X(d);
+    const re = d <= T && L.length ? (d === T ? rNow : fisAt(d)) : null, fi = d <= pEnd ? pctPago(d) : null, xe = ex && d <= T ? (d === T ? eNow : exAt(d)) : null, x = X(d);
     g.style.display = ''; g.children[0].setAttribute('x1', x); g.children[0].setAttribute('x2', x);
-    [[1, re], [2, fi]].forEach(([i, v]) => { const c = g.children[i]; if (v == null) c.style.display = 'none'; else { c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', Y(v)); } });
+    [[1, re], [2, fi], [3, xe]].forEach(([i, v]) => { const c = g.children[i]; if (v == null) c.style.display = 'none'; else { c.style.display = ''; c.setAttribute('cx', x); c.setAttribute('cy', Y(v)); } });
     showTip(e.clientX, e.clientY, `<div class="th">${fd(d)}${d === T ? ' · hoje' : ''}</div>
       ${re != null ? `<div class="tr"><i style="--c:#fff"></i><b>${Math.round(re * 100)}%</b><span>Avanço real</span></div>` : ''}
+      ${xe != null ? `<div class="tr"><i style="--c:#9fb2ff"></i><b>${Math.round(xe * 100)}%</b><span>Executado · ${brl(xe * ex.base)}</span></div>` : ''}
       ${fi != null ? `<div class="tr"><i style="--c:#2cc4ad"></i><b>${Math.round(fi * 100)}%</b><span>Pago · ${brl(cum(d))}</span></div>` : ''}`);
   });
   hit.addEventListener('pointerleave', () => { g.style.display = 'none'; hideTip(); });
@@ -4190,50 +4265,56 @@ function vFinanceiro() {
   const D = S.finD[pid];
   if (!D || (!D.loaded && !D.err)) return loadingHTML();
   if (D.err && !D.loaded) return `<div class="card empty"><h3>Não foi possível carregar o financeiro</h3><div class="row"><button class="btn" data-act="fin-reload">Tentar de novo</button></div></div>`;
-  const k = finTotals(D), fis = metaStats(pid, allActs()).prog, al = finAlerts(k);
+  const k = finTotals(D), F = finPlan(pid), al = finAlerts(k);
+  if (F && Math.abs(F.falta) >= 0.01 && F.rows.length && k.contrato) al.push(F.falta > 0 ? `Falta distribuir ${brl(F.falta)} do contrato entre as atividades (aba “Por atividade”).` : `Os valores das atividades passam ${brl(-F.falta)} do contrato com aditivos.`);
+  if (F && F.adiant.length) al.push(`${F.adiant.length} ${F.adiant.length === 1 ? 'atividade tem' : 'atividades têm'} pagamento acima do executado (pago adiantado).`);
   const kpi = (i, l, v, foot, c = '', act = '') => `<div class="kpi rise ${act ? 'click' : ''}" style="--i:${i}" ${act} ${act ? 'tabindex="0"' : ''}><div class="lbl">${l}</div><div class="val fval ${c}">${v}</div><div class="foot">${foot}</div></div>`;
   const kpis = `<div class="card kpis fin-k">
     ${kpi(0, 'Valor do contrato', brl(k.contrato), D.contrato && D.contrato.obs ? esc(D.contrato.obs) : 'clique para editar', '', 'data-act="fin-contrato"')}
     ${kpi(1, 'Aditivos', (k.aditivos > 0 ? '+' : '') + brl(k.aditivos), (n => `${n} ${n === 1 ? 'registrado' : 'registrados'}`)((D.itens || []).filter(x => x.tipo === 'aditivo').length))}
     ${kpi(2, 'Faturamento direto', '−' + brl(k.fd), 'abatido do valor da obra')}
     ${kpi(3, 'Valor ajustado', brl(k.aj), 'contrato + aditivos − faturamento direto', 'strong')}
-    ${kpi(4, 'Pago até hoje', brl(k.pago), `${Math.round(k.pct)}% do valor ajustado`)}
-    ${kpi(5, 'A pagar', brl(k.aPagar), k.aPagar < 0 ? 'pago acima do ajustado' : 'saldo restante', k.aPagar < 0 ? 'neg' : 'strong')}</div>`;
+    ${kpi(4, 'Executado', brl(F ? F.exec : 0), `${Math.round(F ? F.execPct : 0)}% do valor da obra (valor × avanço físico)`, '', 'data-act="fin-tab" data-t="ativ"')}
+    ${kpi(5, 'Pago até hoje', brl(k.pago), `${Math.round(k.pct)}% do valor ajustado`)}
+    ${kpi(6, 'A medir', brl(F ? F.aMedir : 0), F && (F.pagoGeral + F.fdGeral) > 0.5 ? 'executado − tudo o que já foi pago' : 'executado e ainda não pago', F && F.aMedir > 0.5 ? 'strong' : '', 'data-act="fin-med"')}
+    ${kpi(7, 'A pagar', brl(k.aPagar), k.aPagar < 0 ? 'pago acima do ajustado' : 'saldo restante', k.aPagar < 0 ? 'neg' : 'strong')}</div>`;
   const pays = (D.itens || []).filter(x => x.tipo === 'pagamento').map(x => ({ d: x.data, v: x.valor }));
-  S.finChart = { pid, pays, aj: k.aj };
-  const cmp = `<div class="card fin-cmp rise" style="--i:3"><div class="card-h"><h2>Avanço real × avanço pago</h2><div class="lkeys"><span><i style="--c:var(--ink)"></i>Avanço real</span><span><i style="--c:var(--fin)"></i>Avanço pago (% do valor ajustado)</span></div></div>
+  S.finChart = { pid, pays, aj: k.aj, ex: F && F.base > 0 ? { base: F.base, rows: F.rows.map(r => ({ x: r.x, valor: r.valor })), now: F.execPct / 100 } : null };
+  const cmp = `<div class="card fin-cmp rise" style="--i:3"><div class="card-h"><h2>Avanço real × avanço pago</h2><div class="lkeys"><span><i style="--c:var(--ink)"></i>Avanço real</span><span><i style="--c:var(--accent)"></i>Executado (% do valor da obra)</span><span><i style="--c:var(--fin)"></i>Avanço pago (% do valor ajustado)</span></div></div>
     <div class="sgap" id="fgap"></div><div class="chart" id="fchart" style="height:250px"></div></div>`;
   const tab = S.finTab, all = (D.itens || []).filter(x => x.tipo === tab), q = norm(S.finQ);
   const list = all.filter(x => !q || norm([x.descricao, x.fornecedor, x.nf].join(' ')).includes(q)).sort((a, b) => String(b.data).localeCompare(String(a.data)) || String(b.created_at).localeCompare(String(a.created_at)));
   const tot = list.reduce((s, x) => s + x.valor, 0);
-  const tabs = `<div class="fin-tabs" role="tablist">${['pagamento', 'fd', 'aditivo'].map(t => `<button role="tab" aria-selected="${tab === t}" class="${tab === t ? 'on' : ''}" data-act="fin-tab" data-t="${t}">${FT[t].l}<b>${(D.itens || []).filter(x => x.tipo === t).length}</b></button>`).join('')}<button role="tab" aria-selected="${tab === 'log'}" class="${tab === 'log' ? 'on' : ''}" data-act="fin-tab" data-t="log">Histórico</button></div>`;
+  const tabs = `<div class="fin-tabs" role="tablist"><button role="tab" aria-selected="${tab === 'ativ'}" class="${tab === 'ativ' ? 'on' : ''}" data-act="fin-tab" data-t="ativ">Por atividade<b>${F ? F.rows.length : 0}</b></button>${['pagamento', 'fd', 'aditivo'].map(t => `<button role="tab" aria-selected="${tab === t}" class="${tab === t ? 'on' : ''}" data-act="fin-tab" data-t="${t}">${FT[t].l}<b>${(D.itens || []).filter(x => x.tipo === t).length}</b></button>`).join('')}<button role="tab" aria-selected="${tab === 'log'}" class="${tab === 'log' ? 'on' : ''}" data-act="fin-tab" data-t="log">Histórico</button></div>`;
   let body;
-  if (tab === 'log') {
+  if (tab === 'ativ') body = finAtivHTML(pid);
+  else if (tab === 'log') {
     const A = { insert: 'lançou', update: 'alterou', delete: 'excluiu' };
     body = (D.log || []).length ? `<ul class="rp-list fin-log">${D.log.map(l => { const it = l.acao === 'update' ? (l.item.depois || {}) : l.item, an = l.acao === 'update' ? (l.item.antes || {}) : null;
-      const what = l.tipo === 'contrato' ? `valor do contrato ${an && an.valor != null ? brl(an.valor) + ' → ' : ''}${brl(it.valor)}` : `${FT[l.tipo] ? FT[l.tipo].one : l.tipo}: ${esc(it.descricao || '')} · ${an && an.valor !== it.valor ? brl(an.valor) + ' → ' : ''}${brl(it.valor)}`;
+      const what = l.tipo === 'valor' ? (() => { const a = findAct(it.atividade_id), k2 = a && it.etapa_id ? subsOf(a).findIndex(z => z.id === it.etapa_id) : -1; const nm = a ? `${esc(a.codigo || '')} ${k2 >= 0 ? 'E' + (k2 + 1) + ' · ' + esc(subsOf(a)[k2].nome) : esc(a.titulo)}` : 'atividade excluída'; return l.acao === 'delete' ? `o valor de ${nm} (voltou ao automático, era ${brl(it.valor)})` : `o valor de ${nm}: ${an && an.valor != null ? brl(an.valor) + ' → ' : ''}${brl(it.valor)}`; })() : l.tipo === 'contrato' ? `valor do contrato ${an && an.valor != null ? brl(an.valor) + ' → ' : ''}${brl(it.valor)}` : `${FT[l.tipo] ? FT[l.tipo].one : l.tipo}: ${esc(it.descricao || '')} · ${an && an.valor !== it.valor ? brl(an.valor) + ' → ' : ''}${brl(it.valor)}`;
       return `<li><span class="mono muted">${new Date(l.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span><span><b>${esc(personName(l.por) || 'alguém')}</b> ${A[l.acao] || l.acao} ${what}</span></li>`; }).join('')}</ul>` : '<p class="muted">Nenhuma alteração registrada ainda.</p>';
   } else {
     const isFd = tab === 'fd';
-    body = list.length ? `<div class="tbl-wrap" style="max-height:none;box-shadow:none"><table class="tbl ftbl cardify"><thead><tr><th>Data</th><th>Descrição</th><th>${isFd ? 'Fornecedor' : tab === 'pagamento' ? 'Referência' : 'Motivo / documento'}</th><th>NF / doc.</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody>
-      ${list.map(x => `<tr class="row" data-act="fin-edit" data-id="${x.id}" tabindex="0"><td class="mono" data-l="Data">${fd(P(x.data))}</td><td class="ttl" data-l="Descrição"><div>${esc(x.descricao)}</div></td><td data-l="${isFd ? 'Fornecedor' : 'Referência'}">${esc(x.fornecedor) || '<span class="muted">—</span>'}</td><td class="mono" data-l="NF">${esc(x.nf) || '<span class="muted">—</span>'}</td><td class="tnum fv ${x.valor < 0 ? 'neg' : ''}" data-l="Valor">${tab === 'fd' ? '−' : x.valor > 0 && tab === 'aditivo' ? '+' : ''}${brl(x.valor)}</td><td><button class="btn icon ghost sm" data-act="fin-edit" data-id="${x.id}" aria-label="Editar">${ic('editar')}</button></td></tr>`).join('')}
-      </tbody><tfoot><tr><td colspan="4"><b>Total ${q ? 'filtrado' : ''}</b> · ${list.length} ${list.length === 1 ? 'lançamento' : 'lançamentos'}</td><td class="tnum fv"><b>${tab === 'fd' ? '−' : ''}${brl(tot)}</b></td><td></td></tr></tfoot></table></div>`
+    body = list.length ? `<div class="tbl-wrap" style="max-height:none;box-shadow:none"><table class="tbl ftbl cardify"><thead><tr><th>Data</th><th>Descrição</th>${tab !== 'aditivo' ? '<th>Referente a</th>' : ''}<th>${isFd ? 'Fornecedor' : tab === 'pagamento' ? 'Referência' : 'Motivo / documento'}</th><th>NF / doc.</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody>
+      ${list.map(x => `<tr class="row" data-act="fin-edit" data-id="${x.id}" data-p="${pid}" tabindex="0"><td class="mono" data-l="Data">${fd(P(x.data))}</td><td class="ttl" data-l="Descrição"><div>${esc(x.descricao)}</div>${x.medicao ? `<span class="aptag" style="margin:2px 0 0">medição ${esc(x.medicao)}</span>` : ''}</td>${tab !== 'aditivo' ? `<td data-l="Referente a" class="fref">${refLabel(x)}</td>` : ''}<td data-l="${isFd ? 'Fornecedor' : 'Referência'}">${esc(x.fornecedor) || '<span class="muted">—</span>'}</td><td class="mono" data-l="NF">${esc(x.nf) || '<span class="muted">—</span>'}</td><td class="tnum fv ${x.valor < 0 ? 'neg' : ''}" data-l="Valor">${tab === 'fd' ? '−' : x.valor > 0 && tab === 'aditivo' ? '+' : ''}${brl(x.valor)}</td><td><button class="btn icon ghost sm" data-act="fin-edit" data-id="${x.id}" data-p="${pid}" aria-label="Editar">${ic('editar')}</button></td></tr>`).join('')}
+      </tbody><tfoot><tr><td colspan="${tab !== 'aditivo' ? 5 : 4}"><b>Total ${q ? 'filtrado' : ''}</b> · ${list.length} ${list.length === 1 ? 'lançamento' : 'lançamentos'}</td><td class="tnum fv"><b>${tab === 'fd' ? '−' : ''}${brl(tot)}</b></td><td></td></tr></tfoot></table></div>`
       : `<div class="empty" style="padding:22px"><p>${q ? 'Nada encontrado.' : `Nenhum ${FT[tab].one} lançado.`}</p>${isFd && !q ? '<p class="muted" style="font-size:12.5px">Exemplo: “Compra de 500 tijolos”, fornecedor e NF. O valor abate do valor da obra e do saldo a pagar.</p>' : ''}</div>`;
   }
   const lists = `<div class="card fin-l rise" style="--i:4">${tabs}
-    ${tab !== 'log' ? `<div class="fin-tb"><label class="field f-search">${ic('busca')}<input class="inp" id="fin-q" type="search" placeholder="Buscar descrição, fornecedor ou NF" value="${esc(S.finQ)}" autocomplete="off" aria-label="Buscar lançamentos"></label><span class="sp"></span><button class="btn" data-act="fin-xlsx">${ic('down')}Excel</button><button class="btn primary" data-act="fin-new" data-t="${tab}">${ic('plus')}${FT[tab].novo}</button></div>` : ''}
+    ${tab !== 'log' && tab !== 'ativ' ? `<div class="fin-tb"><label class="field f-search">${ic('busca')}<input class="inp" id="fin-q" type="search" placeholder="Buscar descrição, fornecedor ou NF" value="${esc(S.finQ)}" autocomplete="off" aria-label="Buscar lançamentos"></label><span class="sp"></span><button class="btn" data-act="fin-xlsx">${ic('down')}Excel</button><button class="btn primary" data-act="fin-new" data-t="${tab}">${ic('plus')}${FT[tab].novo}</button></div>` : ''}
     ${body}</div>`;
   return `<div class="dwrap fin">${al.map(m => `<div class="banner fin-al">${ic('s_alert')}<span>${m}</span></div>`).join('')}${kpis}${cmp}${lists}</div>`;
 }
 function afterFin(host) {
   const pid = S.proj; if (!finVisible(pid)) return;
   loadFin(pid);
-  const el = host && host.querySelector('#fchart'); if (el && S.finChart && S.finChart.pid === pid) drawFinChart(el, pid, S.finChart.pays, S.finChart.aj);
+  const el = host && host.querySelector('#fchart'); if (el && S.finChart && S.finChart.pid === pid) drawFinChart(el, pid, S.finChart.pays, S.finChart.aj, S.finChart.ex);
   if (!S.finCh || S.finCh.pid !== pid) {
     if (S.finCh) try { sb.removeChannel(S.finCh.ch); } catch (e) {}
     const re = () => { clearTimeout(S.finChT); S.finChT = setTimeout(() => loadFin(pid, true), 300); };
     const ch = sb.channel('fin-' + pid).on('postgres_changes', { event: '*', schema: 'public', table: 'fin_itens', filter: 'project_id=eq.' + pid }, re)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'fin_contratos', filter: 'project_id=eq.' + pid }, re).subscribe();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fin_contratos', filter: 'project_id=eq.' + pid }, re)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fin_valores', filter: 'project_id=eq.' + pid }, re).subscribe();
     S.finCh = { pid, ch };
   }
 }
@@ -4251,8 +4332,9 @@ function openFinContrato() {
     closeModal(); toast('Valor do contrato salvo.', 'ok'); loadFin(pid, true);
   });
 }
-function openFinItem(id, tipo0) {
-  const pid = S.proj, D = S.finD[pid] || {}, x = id ? (D.itens || []).find(i => i.id === id) : null, tipo = x ? x.tipo : tipo0 || 'pagamento';
+function openFinItem(id, tipo0, pre = {}) {
+  const pid = pre.pid || S.proj, D = S.finD[pid] || {}, x = id ? (D.itens || []).find(i => i.id === id) : null, tipo = x ? x.tipo : tipo0 || 'pagamento';
+  if (id && !x) return;
   const sign = x && x.tipo === 'aditivo' && x.valor < 0 ? '-' : '+';
   openModal(`<form id="ffi" novalidate><div class="md-h"><h3>${x ? 'Editar lançamento' : FT[tipo].novo}</h3><p>${esc(projName(pid))}</p></div>
     <div class="md-b">
@@ -4261,15 +4343,18 @@ function openFinItem(id, tipo0) {
       <div class="cols2"><div class="f"><label for="fi-d">Data <span class="req">*</span></label><input class="inp" type="date" id="fi-d" value="${esc(x ? x.data : ISO(today()))}"></div>
         <div class="f"><label for="fi-nf">NF / documento</label><input class="inp" id="fi-nf" maxlength="60" value="${esc(x ? x.nf : '')}"></div></div>
       <div class="f"><label for="fi-ds">Descrição <span class="req">*</span></label><input class="inp" id="fi-ds" maxlength="300" value="${esc(x ? x.descricao : '')}" placeholder="Ex.: Compra de 500 tijolos"></div>
+      <div class="cols2" id="fi-refw"><div class="f"><label for="fi-ref">Referente a</label><select class="sel" id="fi-ref">${refOptions(pid, x ? x.atividade_id : pre.aid, x ? x.etapa_id : pre.sid)}</select><span class="hint">Liga o lançamento a uma atividade ou etapa para acompanhar o pago de cada uma.</span></div>
+        <div class="f" id="fi-medw"><label for="fi-med">Nº da medição</label><input class="inp" id="fi-med" maxlength="40" value="${esc(x ? x.medicao || '' : '')}" placeholder="opcional"></div></div>
       <div class="f"><label for="fi-fo" id="fi-fol">Fornecedor</label><input class="inp" id="fi-fo" maxlength="160" value="${esc(x ? x.fornecedor : '')}"></div>
       <div class="fi-calc" id="fi-calc"><div class="f"><label for="fi-q">Quantidade</label><input class="inp" id="fi-q" inputmode="decimal" placeholder="500"></div><span class="x">×</span><div class="f"><label for="fi-u">Valor unitário (R$)</label><input class="inp money" id="fi-u" inputmode="decimal" placeholder="1,20"></div><span class="hint">Opcional: calcula o valor total.</span></div>
       <div class="cols2"><div class="f" id="fi-sgw"><span class="lab">Aditivo</span><div class="seg-ctl"><label><input type="radio" name="fi-sg" value="+" ${sign === '+' ? 'checked' : ''}>Acréscimo</label><label><input type="radio" name="fi-sg" value="-" ${sign === '-' ? 'checked' : ''}>Supressão</label></div></div>
         <div class="f"><label for="fi-v">Valor (R$) <span class="req">*</span></label><input class="inp money" id="fi-v" inputmode="decimal" value="${x ? brlIn(Math.abs(x.valor)) : ''}" placeholder="0,00" autocomplete="off"></div></div>
       <p class="err" id="fi-err" role="alert"></p></div>
-    <div class="md-f">${x ? `<button type="button" class="btn danger sm" data-act="fin-del" data-id="${x.id}" style="margin-right:auto">${ic('lixo')}Excluir</button>` : ''}<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="submit" class="btn primary">${x ? 'Salvar' : 'Lançar'}</button></div></form>`);
+    <div class="md-f">${x ? `<button type="button" class="btn danger sm" data-act="fin-del" data-id="${x.id}" data-p="${pid}" style="margin-right:auto">${ic('lixo')}Excluir</button>` : ''}<button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="submit" class="btn primary">${x ? 'Salvar' : 'Lançar'}</button></div></form>`);
   const sync = () => {
     const t = ($('input[name="fi-t"]:checked') || {}).value;
     $('#fi-calc').hidden = t !== 'fd'; $('#fi-sgw').style.visibility = t === 'aditivo' ? '' : 'hidden';
+    $('#fi-refw').hidden = t === 'aditivo'; $('#fi-medw').style.visibility = t === 'pagamento' ? '' : 'hidden';
     $('#fi-fol').textContent = t === 'fd' ? 'Fornecedor' : t === 'pagamento' ? 'Referência (ex.: medição 3)' : 'Motivo ou documento';
     $('#fi-hint').textContent = t === 'fd' ? 'Compra paga direto pelo cliente: abate do valor da obra e do saldo a pagar.' : t === 'pagamento' ? 'Valor pago à executora. Reduz o saldo a pagar.' : 'Muda o valor do contrato: acréscimo soma, supressão subtrai.';
   };
@@ -4284,17 +4369,18 @@ function openFinItem(id, tipo0) {
     if (!ds) return er('Informe a descrição.');
     if (isNaN(v) || v <= 0) return er('Informe um valor maior que zero, por exemplo 1.250,00.');
     if (t === 'aditivo' && ($('input[name="fi-sg"]:checked') || {}).value === '-') v = -v;
-    const row = { project_id: pid, tipo: t, data: d, descricao: ds, fornecedor: $('#fi-fo').value.trim(), nf: $('#fi-nf').value.trim(), valor: v };
+    const [ra, rs] = t === 'aditivo' ? ['', ''] : ($('#fi-ref').value || '|').split('|');
+    const row = { project_id: pid, tipo: t, data: d, descricao: ds, fornecedor: $('#fi-fo').value.trim(), nf: $('#fi-nf').value.trim(), valor: v, atividade_id: ra || null, etapa_id: rs || null, medicao: t === 'pagamento' ? $('#fi-med').value.trim() : '' };
     const btn = e.submitter || $('#ffi button[type=submit]'); btn.disabled = true;
     const r = x ? await sb.from('fin_itens').update(row).eq('id', x.id) : await sb.from('fin_itens').insert(row);
     if (r.error) { btn.disabled = false; return er(dbErr(r.error).message); }
     closeModal(); toast(x ? 'Lançamento atualizado.' : `${t === 'fd' ? 'Compra' : t === 'pagamento' ? 'Pagamento' : 'Aditivo'} de ${brl(Math.abs(v))} lançado.`, 'ok');
-    S.finTab = t; loadFin(pid, true);
+    if (S.view === 'financeiro' && S.finTab !== 'ativ') S.finTab = t; loadFin(pid, true);
   });
 }
 async function delFinItem(id, btn) {
   if (!armed(btn, 'Confirmar exclusão')) return;
-  const pid = S.proj, x = ((S.finD[pid] || {}).itens || []).find(i => i.id === id);
+  const pid = btn.dataset.p || S.proj, x = ((S.finD[pid] || {}).itens || []).find(i => i.id === id);
   const { error } = await sb.from('fin_itens').delete().eq('id', id);
   if (error) { toast(dbErr(error).message, 'err'); return; }
   closeModal(); loadFin(pid, true);
@@ -4307,10 +4393,20 @@ async function exportFin() {
   const ws = wb.addWorksheet('Resumo'); ws.columns = [{ header: 'Item', key: 'a', width: 34 }, { header: 'Valor', key: 'b', width: 20 }];
   [['Projeto', projName(pid)], ['Valor do contrato', k.contrato], ['Aditivos', k.aditivos], ['Faturamento direto (abatido)', -k.fd], ['Valor ajustado', k.aj], ['Pago até hoje', k.pago], ['A pagar', k.aPagar], ['% pago do ajustado', Math.round(k.pct) / 100], ['Avanço físico', Math.round(metaStats(pid, allActs()).prog) / 100]].forEach(([a, b], i) => { const r = ws.addRow({ a, b }); if (typeof b === 'number') r.getCell(2).numFmt = i >= 7 ? '0%' : money; });
   ws.getRow(1).font = { bold: true };
+  const F = finPlan(pid);
+  if (F) {
+    const wa = wb.addWorksheet('Por atividade');
+    wa.columns = [{ header: 'Código', key: 'c', width: 10 }, { header: 'Atividade', key: 'a', width: 44 }, { header: 'Etapa', key: 'e', width: 28 }, { header: 'Valor', key: 'v', width: 16 }, { header: 'Origem do valor', key: 'o', width: 14 }, { header: 'Físico', key: 'f', width: 9 }, { header: 'Executado', key: 'x', width: 16 }, { header: 'Pago', key: 'p', width: 16 }, { header: 'FD', key: 'd', width: 14 }, { header: 'A medir', key: 'm', width: 16 }, { header: 'Saldo', key: 's', width: 16 }];
+    wa.getRow(1).font = { bold: true };
+    const add = (o, bold) => { const r = wa.addRow(o); [4, 7, 8, 9, 10, 11].forEach(c => r.getCell(c).numFmt = money); r.getCell(6).numFmt = '0%'; if (bold) r.font = { bold: true }; };
+    F.rows.forEach(r => { add({ c: r.x.a.codigo || '', a: r.x.a.titulo, e: '', v: r.valor, o: r.auto ? 'automático' : r.anyS && r.mA == null ? 'soma etapas' : 'definido', f: r.fis / 100, x: r.exec, p: r.pago, d: -r.fd, m: r.aMedir, s: r.saldo }, !!r.units);
+      (r.units || []).forEach(u => add({ c: '', a: '', e: `E${u.si + 1} · ${u.s.nome}`, v: u.valor, o: u.manual ? 'definido' : 'automático', f: u.fis / 100, x: u.exec, p: u.pago, d: -u.fd, m: u.aMedir, s: u.saldo })); });
+    add({ c: '', a: 'Total', e: '', v: F.dist, o: '', f: F.execPct / 100, x: F.exec, p: F.rows.reduce((t, r) => t + r.pago, 0) + F.pagoGeral, d: -(F.rows.reduce((t, r) => t + r.fd, 0) + F.fdGeral), m: F.aMedir, s: F.rows.reduce((t, r) => t + r.saldo, 0) - F.pagoGeral - F.fdGeral }, true);
+  }
   ['pagamento', 'fd', 'aditivo'].forEach(t => {
-    const s = wb.addWorksheet(FT[t].l.slice(0, 31)); s.columns = [{ header: 'Data', key: 'd', width: 12 }, { header: 'Descrição', key: 'ds', width: 50 }, { header: t === 'fd' ? 'Fornecedor' : 'Referência', key: 'f', width: 28 }, { header: 'NF', key: 'nf', width: 14 }, { header: 'Valor', key: 'v', width: 16 }];
+    const s = wb.addWorksheet(FT[t].l.slice(0, 31)); s.columns = [{ header: 'Data', key: 'd', width: 12 }, { header: 'Descrição', key: 'ds', width: 50 }, { header: t === 'fd' ? 'Fornecedor' : 'Referência', key: 'f', width: 28 }, { header: 'NF', key: 'nf', width: 14 }, { header: 'Valor', key: 'v', width: 16 }, { header: 'Referente a', key: 'ref', width: 40 }, { header: 'Medição', key: 'med', width: 10 }];
     s.getRow(1).font = { bold: true };
-    (D.itens || []).filter(x => x.tipo === t).sort((a, b) => String(a.data).localeCompare(String(b.data))).forEach(x => { const r = s.addRow({ d: fd(P(x.data)), ds: x.descricao, f: x.fornecedor, nf: x.nf, v: x.valor }); r.getCell(5).numFmt = money; });
+    (D.itens || []).filter(x => x.tipo === t).sort((a, b) => String(a.data).localeCompare(String(b.data))).forEach(x => { const tmp = document.createElement('div'); tmp.innerHTML = refLabel(x); const r = s.addRow({ d: fd(P(x.data)), ds: x.descricao, f: x.fornecedor, nf: x.nf, v: x.valor, ref: tmp.textContent.trim(), med: x.medicao || '' }); r.getCell(5).numFmt = money; });
   });
   try { const buf = await wb.xlsx.writeBuffer(); await downloads.save({ filename: `financeiro-${norm(projName(pid)).replace(/[^a-z0-9]+/g, '-')}-${ISO(today())}.xlsx`, data: new Blob([buf]) }); toast('Financeiro exportado.', 'ok'); }
   catch (e) { toast('Não foi possível gerar o arquivo.', 'err'); }
@@ -4320,7 +4416,7 @@ document.addEventListener('click', e => {
   switch (t.dataset.act) {
     case 'fin-tab': S.finTab = t.dataset.t; render(); break;
     case 'fin-new': openFinItem(null, t.dataset.t); break;
-    case 'fin-edit': e.stopPropagation(); openFinItem(t.dataset.id); break;
+    case 'fin-edit': e.stopPropagation(); openFinItem(t.dataset.id, null, { pid: t.dataset.p }); break;
     case 'fin-del': delFinItem(t.dataset.id, t); break;
     case 'fin-contrato': openFinContrato(); break;
     case 'fin-reload': loadFin(S.proj, true); break;
@@ -4329,6 +4425,207 @@ document.addEventListener('click', e => {
 });
 let finQT = 0;
 document.addEventListener('input', e => { if (e.target.id === 'fin-q') { S.finQ = e.target.value; clearTimeout(finQT); finQT = setTimeout(render, 140); } });
+
+/* ===================== FINANCEIRO POR ATIVIDADE E ETAPA ===================== */
+/* Base = contrato + aditivos (valor da obra). Atividade ou etapa pode ter valor definido; por padrão
+   o que falta é distribuído pelo peso entre as atividades sem valor, então a soma fecha com o contrato.
+   Executado = valor × avanço físico. FD ligado a uma atividade abate dentro dela.
+   A medir = executado − pago − FD da atividade (negativo = pago adiantado). */
+const VK = (a, s) => a + ':' + (s || '');
+const r2 = v => Math.round((+v || 0) * 100) / 100;
+function spread(total, ws) { // reparte o total pelos pesos, em centavos, fechando exato
+  const W = ws.reduce((a, b) => a + b, 0); if (!W || total <= 0) return ws.map(() => 0);
+  const out = ws.map(w => Math.floor(total * w / W * 100) / 100);
+  let rest = r2(total - out.reduce((a, b) => a + b, 0));
+  for (let i = out.length - 1; rest > 0.004 && i >= 0; i--) if (ws[i]) { out[i] = r2(out[i] + rest); rest = 0; }
+  return out;
+}
+let fpMemo = { k: '', v: null };
+function finPlan(pid) {
+  const D = S.finD[pid]; if (!D || !D.loaded) return null;
+  const key = S.ver + '|' + pid + '|' + (D.v || 0) + '|' + today();
+  if (fpMemo.k === key) return fpMemo.v;
+  const k = finTotals(D), base = r2(k.contrato + k.aditivos), auto = !D.contrato || D.contrato.auto_dist !== false;
+  const man = new Map((D.valores || []).map(v => [VK(v.atividade_id, v.etapa_id), +v.valor]));
+  const xs = live(allActs().filter(x => x.a.metaId === pid)).sort(SORTS.codigo);
+  const rows = xs.map(x => {
+    const subs = subsOf(x.a), mA = man.get(VK(x.a.id, '')), mS = subs.map(s => man.get(VK(x.a.id, s.id))), anyS = mS.some(v => v != null);
+    return { x, subs, mA, mS, anyS, w: +x.a.peso || 1, fixed: mA != null ? mA : anyS ? r2(mS.reduce((t, v) => t + (v || 0), 0)) : null };
+  });
+  const free = rows.filter(r => r.fixed == null), rem = r2(base - rows.reduce((t, r) => t + (r.fixed ?? 0), 0));
+  const sp = auto ? spread(rem, free.map(r => r.w)) : free.map(() => 0);
+  free.forEach((r, i) => { r.valor = sp[i]; r.auto = true; });
+  rows.forEach(r => { if (r.fixed != null) { r.valor = r.fixed; r.auto = false; } });
+  const itens = D.itens || [], ids = new Set(rows.map(r => r.x.a.id));
+  const sumBy = (t, aid, sid) => r2(itens.filter(i => i.tipo === t && i.atividade_id === aid && (sid === undefined || (i.etapa_id || '') === sid)).reduce((s, i) => s + i.valor, 0));
+  rows.forEach(r => {
+    const aid = r.x.a.id, sc = r.x.c.subs || [];
+    r.pago = sumBy('pagamento', aid); r.fd = sumBy('fd', aid);
+    if (r.subs.length) {
+      const manSum = r.mS.reduce((t, v) => t + (v || 0), 0), fw = r.subs.map((s, i) => r.mS[i] == null ? (+s.peso || 1) : 0);
+      const spS = spread(r2(Math.max(0, r.valor - manSum)), fw);
+      r.units = r.subs.map((s, i) => {
+        const c = sc[i], f = c ? (c.done ? 1 : (c.prog || 0) / 100) : 0, valor = r.mS[i] != null ? r.mS[i] : spS[i];
+        const u = { s, si: i, c, manual: r.mS[i] != null, valor, fis: f * 100, exec: r2(valor * f), pago: sumBy('pagamento', aid, s.id), fd: sumBy('fd', aid, s.id) };
+        u.aMedir = r2(u.exec - u.pago - u.fd); u.saldo = r2(u.valor - u.pago - u.fd); return u;
+      });
+      r.exec = r2(r.units.reduce((t, u) => t + u.exec, 0));
+      r.over = !r.anyS ? false : r.mA != null && manSum > r.mA + 0.004;
+    } else { r.units = null; r.exec = r2(r.valor * r.x.c.valor); }
+    r.fis = r.valor > 0 ? r.exec / r.valor * 100 : r.x.c.valor * 100;
+    r.aMedir = r2(r.exec - r.pago - r.fd); r.saldo = r2(r.valor - r.pago - r.fd);
+  });
+  const dist = r2(rows.reduce((t, r) => t + r.valor, 0)), exec = r2(rows.reduce((t, r) => t + r.exec, 0));
+  const geral = t => r2(itens.filter(i => i.tipo === t && !(i.atividade_id && ids.has(i.atividade_id))).reduce((s, i) => s + i.valor, 0));
+  const v = { base, auto, rows, dist, falta: r2(base - dist), exec, execPct: base > 0 ? exec / base * 100 : 0,
+    aMedirAtiv: r2(rows.reduce((t, r) => t + Math.max(0, r.aMedir), 0)),
+    adiant: rows.filter(r => r.aMedir < -0.5), pagoGeral: geral('pagamento'), fdGeral: geral('fd') };
+  v.aMedir = r2(Math.max(0, v.aMedirAtiv - v.pagoGeral - v.fdGeral));
+  fpMemo = { k: key, v }; return v;
+}
+
+/* ---------- aba "Por atividade" ---------- */
+S.finOpen = new Set();
+function finAtivHTML(pid) {
+  const F = finPlan(pid); if (!F) return '';
+  if (!F.rows.length) return `<div class="empty" style="padding:22px"><p>O projeto ainda não tem atividades.</p></div>`;
+  const pct = v => Math.round(v) + '%';
+  const vIn = (aid, sid, u) => u.manual
+    ? `<div class="fvw"><input class="inp money fvin man" data-a="${aid}" data-s="${sid}" value="${brlIn(u.valor)}" inputmode="decimal" aria-label="Valor"><button type="button" class="fv-x" data-act="fv-clear" data-a="${aid}" data-s="${sid}" data-tip="Voltar ao valor automático" aria-label="Voltar ao automático">${ic('fechar')}</button></div>`
+    : `<div class="fvw"><input class="inp money fvin" data-a="${aid}" data-s="${sid}" value="" placeholder="${brlIn(u.valor)}" inputmode="decimal" aria-label="Valor (automático)"><span class="fv-auto" data-tip="Valor automático: parte do saldo pelo peso. Digite para fixar.">auto</span></div>`;
+  const medir = v => v < -0.5 ? `<span class="neg" data-tip="Pago acima do executado">−${brl(-v)}</span>` : v > 0.5 ? `<b>${brl(v)}</b>` : '<span class="muted">—</span>';
+  const pf = (p, f) => p + f ? `<span ${f ? `data-tip="Pago ${brl(p)} · faturamento direto ${brl(f)}"` : ''}>${brl(p + f)}${f ? '<sup class="fd-m">FD</sup>' : ''}</span>` : '<span class="muted">—</span>';
+  const fisBar = f => `<div class="fbar"><i style="width:${Math.min(100, f).toFixed(1)}%"></i></div><span class="tnum">${pct(f)}</span>`;
+  const rowsHTML = F.rows.map(r => {
+    const a = r.x.a, open = S.finOpen.has(a.id), hasS = !!r.units;
+    const valA = hasS && r.anyS && r.mA == null
+      ? `<div class="fvw"><span class="fv-sum tnum" data-tip="Soma das etapas">${brl(r.valor)}</span><span class="fv-auto">soma</span></div>`
+      : vIn(a.id, '', { manual: r.mA != null, valor: r.valor });
+    const head = `<tr class="fa-row ${r.over ? 'warn' : ''}"><td data-l="Atividade"><div class="fa-name">${hasS ? `<button type="button" class="chev-b ${open ? 'open' : ''}" data-act="fa-tog" data-id="${a.id}" aria-expanded="${open}" aria-label="Etapas">${ic('chev')}</button>` : '<span class="chev-sp"></span>'}<span class="mono muted">${esc(a.codigo || '')}</span><b>${esc(a.titulo)}</b>${hasS ? `<span class="muted fa-n">${r.units.length} etapas</span>` : ''}</div>${r.over ? '<div class="fa-warn">As etapas somam mais que o valor da atividade.</div>' : ''}</td>
+      <td data-l="Valor">${valA}</td><td data-l="Físico" class="fa-f">${fisBar(r.fis)}</td><td data-l="Executado" class="fv">${brl(r.exec)}</td>
+      <td data-l="Pago + FD" class="fv">${pf(r.pago, r.fd)}</td>
+      <td data-l="A medir" class="fv">${medir(r.aMedir)}</td><td data-l="Saldo" class="fv">${brl(r.saldo)}</td></tr>`;
+    const subs = hasS && open ? r.units.map(u => `<tr class="fa-sub"><td data-l="Etapa"><div class="fa-name"><span class="chev-sp"></span>${etBadge(u.si + 1)}<span>${esc(u.s.nome)}</span></div></td>
+      <td data-l="Valor">${vIn(a.id, u.s.id, u)}</td><td data-l="Físico" class="fa-f">${fisBar(u.fis)}</td><td data-l="Executado" class="fv">${brl(u.exec)}</td>
+      <td data-l="Pago + FD" class="fv">${pf(u.pago, u.fd)}</td>
+      <td data-l="A medir" class="fv">${medir(u.aMedir)}</td><td data-l="Saldo" class="fv">${brl(u.saldo)}</td></tr>`).join('') : '';
+    return head + subs;
+  }).join('');
+  const ok = Math.abs(F.falta) < 0.01;
+  const top = `<div class="fa-top"><div class="fa-dist ${ok ? 'ok' : 'warn'}">${ic(ok ? 's_check' : 's_alert')}<span>Distribuído <b>${brl(F.dist)}</b> de <b>${brl(F.base)}</b> (contrato + aditivos) · ${ok ? 'fecha com o contrato' : F.falta > 0 ? `falta distribuir <b>${brl(F.falta)}</b>` : `passou <b>${brl(-F.falta)}</b> do contrato`}</span></div>
+    <label class="tog ${F.auto ? 'on' : ''}"><input type="checkbox" id="fin-auto" ${F.auto ? 'checked' : ''}>Distribuir o saldo pelo peso das atividades sem valor</label>
+    <span class="sp"></span><button class="btn" data-act="fin-xlsx">${ic('down')}Excel</button><button class="btn primary" data-act="fin-med">${ic('check')}Gerar medição</button></div>
+    <p class="muted fa-hint">Digite o valor de uma atividade ou etapa para fixá-lo; as demais dividem o saldo pelo peso. <b>Executado</b> = valor × avanço físico. <b>A medir</b> = executado − pago − faturamento direto da atividade.</p>`;
+  const tot = { pago: r2(F.rows.reduce((t, r) => t + r.pago, 0)), fd: r2(F.rows.reduce((t, r) => t + r.fd, 0)), saldo: r2(F.rows.reduce((t, r) => t + r.saldo, 0)) };
+  return top + `<div class="tbl-wrap" style="max-height:none;box-shadow:none"><table class="tbl fatbl cardify"><thead><tr><th>Atividade</th><th>Valor</th><th>Físico</th><th style="text-align:right">Executado</th><th style="text-align:right" data-tip="Pagamentos e faturamento direto ligados à atividade">Pago + FD</th><th style="text-align:right">A medir</th><th style="text-align:right">Saldo</th></tr></thead>
+    <tbody>${rowsHTML}${F.pagoGeral || F.fdGeral ? `<tr class="fa-geral"><td colspan="4" data-l="">Lançamentos do projeto geral (sem atividade · ligue-os às atividades editando cada um)</td><td class="fv" data-l="Pago + FD">${pf(F.pagoGeral, F.fdGeral)}</td><td></td><td class="fv" data-l="Saldo">−${brl(F.pagoGeral + F.fdGeral)}</td></tr>` : ''}</tbody>
+    <tfoot><tr><td><b>Total</b></td><td class="fv"><b>${brl(F.dist)}</b></td><td class="fa-f">${fisBar(F.execPct)}</td><td class="fv"><b>${brl(F.exec)}</b></td><td class="fv"><b>${brl(tot.pago + F.pagoGeral + tot.fd + F.fdGeral)}</b></td><td class="fv"><b>${brl(F.aMedir)}</b></td><td class="fv"><b>${brl(tot.saldo - F.pagoGeral - F.fdGeral)}</b></td></tr></tfoot></table></div>`;
+}
+async function saveValor(pid, aid, sid, txt, el) {
+  const v = parseBRL(txt), key = { project_id: pid, atividade_id: aid, etapa_id: sid || '' };
+  const had = ((S.finD[pid] || {}).valores || []).some(x => x.atividade_id === aid && (x.etapa_id || '') === (sid || ''));
+  let r;
+  if (String(txt).trim() === '' || isNaN(v)) { if (!had) return; r = await sb.from('fin_valores').delete().eq('project_id', pid).eq('atividade_id', aid).eq('etapa_id', sid || ''); }
+  else if (v < 0) { toast('O valor não pode ser negativo.', 'warn'); return; }
+  else r = await sb.from('fin_valores').upsert({ ...key, valor: v }, { onConflict: 'project_id,atividade_id,etapa_id' });
+  if (r && r.error) { toast(dbErr(r.error).message, 'err'); return; }
+  if (el) el.classList.add('saved');
+  await loadFin(pid, true);
+}
+async function setAutoDist(pid, on) {
+  const { error } = await sb.from('fin_contratos').upsert({ project_id: pid, auto_dist: on }, { onConflict: 'project_id' });
+  if (error) { toast(dbErr(error).message, 'err'); return; }
+  toast(on ? 'O saldo volta a ser distribuído pelo peso.' : 'Distribuição automática desligada: atividades sem valor ficam em R$ 0.', '');
+  loadFin(pid, true);
+}
+
+/* ---------- gerar medição: um pagamento por atividade ou etapa, com o mesmo nº ---------- */
+function medUnits(pid) {
+  const F = finPlan(pid), out = [];
+  F.rows.forEach(r => {
+    const a = r.x.a;
+    if (r.units && r.anyS) r.units.forEach(u => out.push({ aid: a.id, sid: u.s.id, code: a.codigo || '', nome: `${a.titulo} · E${u.si + 1} ${u.s.nome}`, fis: u.fis, valor: u.valor, sug: r2(Math.max(0, u.aMedir)) }));
+    else out.push({ aid: a.id, sid: '', code: a.codigo || '', nome: a.titulo, fis: r.fis, valor: r.valor, sug: r2(Math.max(0, r.aMedir)) });
+  });
+  return out;
+}
+function openMedicao(pid) {
+  const D = S.finD[pid]; if (!D || !D.loaded) return;
+  const all = medUnits(pid), sugs = all.filter(u => u.sug > 0.004);
+  const nums = (D.itens || []).map(i => parseInt(i.medicao, 10)).filter(n => !isNaN(n)), n = (nums.length ? Math.max(...nums) : 0) + 1;
+  const row = (u, i) => `<tr><td><input type="checkbox" class="md-ck" data-i="${i}" ${u.sug > 0.004 ? 'checked' : ''} aria-label="Incluir"></td><td><span class="mono muted">${esc(u.code)}</span> ${esc(u.nome)}</td><td class="tnum">${Math.round(u.fis)}%</td><td class="tnum muted" style="text-align:right">${brl(u.sug)}</td><td><input class="inp money md-v" data-i="${i}" value="${u.sug > 0.004 ? brlIn(u.sug) : ''}" placeholder="0,00" inputmode="decimal"></td></tr>`;
+  S.medAll = all;
+  openModal(`<form id="fmd" novalidate><div class="md-h"><h3>Gerar medição nº ${n}</h3><p>${esc(projName(pid))}. O sistema sugere, para cada atividade, o que foi <b>executado e ainda não pago</b>. Ajuste os valores e marque o que entra.</p></div>
+    <div class="md-b">
+      <div class="cols2"><div class="f"><label for="md-d">Data do pagamento</label><input class="inp" type="date" id="md-d" value="${ISO(today())}"></div><div class="f"><label for="md-nf">NF / documento</label><input class="inp" id="md-nf" maxlength="60"></div></div>
+      <div class="f"><label for="md-n">Nº da medição</label><input class="inp" id="md-n" maxlength="40" value="${n}" style="max-width:140px"></div>
+      ${(() => { const F = finPlan(pid), g = r2(F.pagoGeral + F.fdGeral); return g > 0.5 ? `<div class="planhint changed">${ic('s_alert')}<span>Há <b>${brl(g)}</b> pagos sem atividade (projeto geral). A sugestão não os desconta: ligue esses pagamentos às atividades (editando cada um) para a medição ficar exata.</span></div>` : ''; })()}
+      ${sugs.length ? '' : '<div class="planhint">' + ic('info') + '<span>Nada executado a pagar agora. Você ainda pode incluir valores manualmente em “Mostrar todas”.</span></div>'}
+      <div class="tbl-wrap md-tw"><table class="tbl mdtbl"><colgroup><col style="width:38px"><col><col style="width:70px"><col style="width:130px"><col style="width:150px"></colgroup><thead><tr><th></th><th>Atividade / etapa</th><th>Físico</th><th style="text-align:right">Sugerido</th><th>Valor da medição</th></tr></thead><tbody id="md-rows">${all.map((u, i) => u.sug > 0.004 ? row(u, i) : '').join('')}</tbody></table></div>
+      ${all.length > sugs.length ? `<button type="button" class="lnk" id="md-all">Mostrar todas as atividades (${all.length})</button>` : ''}
+      <div class="md-tot">Total da medição: <b id="md-tot">R$ 0,00</b></div><p class="err" id="md-err" role="alert"></p></div>
+    <div class="md-f"><button type="button" class="btn ghost" data-act="close-modal">Cancelar</button><button type="submit" class="btn primary">Lançar medição</button></div></form>`, true);
+  const sum = () => { let t = 0; $$('.md-ck').forEach(c => { if (c.checked) { const v = parseBRL($(`.md-v[data-i="${c.dataset.i}"]`).value); if (!isNaN(v)) t += v; } }); $('#md-tot').textContent = brl(t); };
+  const box = $('#fmd'); box.addEventListener('input', sum); box.addEventListener('change', sum); sum();
+  const ma = $('#md-all'); if (ma) ma.onclick = () => { const keep = {}; $$('.md-ck').forEach(c => keep[c.dataset.i] = [c.checked, $(`.md-v[data-i="${c.dataset.i}"]`).value]); $('#md-rows').innerHTML = all.map(row).join(''); Object.entries(keep).forEach(([i, [ck, v]]) => { $(`.md-ck[data-i="${i}"]`).checked = ck; $(`.md-v[data-i="${i}"]`).value = v; }); ma.remove(); sum(); };
+  box.addEventListener('submit', async e => {
+    e.preventDefault(); const er = m => { $('#md-err').textContent = m; };
+    const d = $('#md-d').value, num = $('#md-n').value.trim(), nf = $('#md-nf').value.trim();
+    if (P(d) == null) return er('Informe a data.');
+    const rows = [];
+    for (const c of $$('.md-ck')) { if (!c.checked) continue; const u = all[+c.dataset.i], v = parseBRL($(`.md-v[data-i="${c.dataset.i}"]`).value); if (isNaN(v) || v <= 0) return er(`Informe um valor maior que zero para ${u.code} ${u.nome}, ou desmarque.`);
+      rows.push({ project_id: pid, tipo: 'pagamento', data: d, descricao: `Medição ${num || n} · ${u.code} ${u.nome}`.slice(0, 300), fornecedor: `Medição ${num || n}`, nf, valor: v, atividade_id: u.aid, etapa_id: u.sid || null, medicao: num || String(n) }); }
+    if (!rows.length) return er('Marque pelo menos uma atividade.');
+    const btn = e.submitter || $('#fmd button[type=submit]'); btn.disabled = true;
+    const r = await sb.from('fin_itens').insert(rows);
+    if (r.error) { btn.disabled = false; return er(dbErr(r.error).message); }
+    closeModal(); toast(`Medição ${num || n} lançada: ${rows.length} ${rows.length === 1 ? 'pagamento' : 'pagamentos'} · ${brl(rows.reduce((t, x) => t + x.valor, 0))}.`, 'ok'); celebrate();
+    loadFin(pid, true);
+  });
+}
+
+/* ---------- "Referente a" nos lançamentos ---------- */
+function refOptions(pid, aid, sid) {
+  const xs = live(allActs().filter(x => x.a.metaId === pid)).sort(SORTS.codigo), sel = VK(aid || '', sid || '');
+  return `<option value="">Projeto geral (sem atividade)</option>` + xs.map(x => `<option value="${x.a.id}|" ${sel === VK(x.a.id, '') ? 'selected' : ''}>${esc(x.a.codigo || '')} · ${esc(x.a.titulo)}</option>` +
+    subsOf(x.a).map((s, i) => `<option value="${x.a.id}|${s.id}" ${sel === VK(x.a.id, s.id) ? 'selected' : ''}>   └ E${i + 1} · ${esc(s.nome)}</option>`).join('')).join('');
+}
+const refLabel = (i) => { if (!i.atividade_id) return '<span class="muted">Projeto geral</span>'; const a = findAct(i.atividade_id); if (!a) return '<span class="muted">Atividade excluída</span>'; const k = i.etapa_id ? subsOf(a).findIndex(s => s.id === i.etapa_id) : -1; return `<span class="mono muted">${esc(a.codigo || '')}</span> ${k >= 0 ? etBadge(k + 1) + ' ' + esc(subsOf(a)[k].nome) : esc(a.titulo)}`; };
+
+/* ---------- quadro financeiro na ficha da atividade ---------- */
+function finActBox(aid) {
+  const a = findAct(aid), pid = a && a.metaId;
+  if (!a || !finVisible(pid)) return '';
+  const D = S.finD[pid];
+  if (!D || !D.loaded) { loadFin(pid); return `<legend>Financeiro</legend><div class="skel-line"></div><div class="skel-line" style="width:60%"></div>`; }
+  const F = finPlan(pid), r = F && F.rows.find(z => z.x.a.id === aid);
+  if (!r) return `<legend>Financeiro</legend><p class="muted" style="margin:0">Atividade cancelada: fora do cronograma financeiro.</p>`;
+  const its = (D.itens || []).filter(i => i.atividade_id === aid).sort((x, y) => String(y.data).localeCompare(String(x.data)));
+  return `<legend>Financeiro</legend>
+    <div class="dstats sm"><div><span>Valor ${r.auto ? '(automático)' : ''}</span><b>${brl(r.valor)}</b></div><div><span>Executado · ${Math.round(r.fis)}%</span><b>${brl(r.exec)}</b></div>
+      <div><span>Pago${r.fd ? ' + FD' : ''}</span><b>${brl(r.pago + r.fd)}</b></div><div><span>${r.aMedir < -0.5 ? 'Pago adiantado' : 'A medir'}</span><b class="${r.aMedir < -0.5 ? 'neg' : ''}">${brl(Math.abs(r.aMedir))}</b></div></div>
+    ${r.units ? `<ul class="rp-list fa-mini">${r.units.map(u => `<li>${etBadge(u.si + 1)}<span>${esc(u.s.nome)}</span><span class="muted">${brl(u.valor)} · ${Math.round(u.fis)}%</span><span class="fv">${u.aMedir < -0.5 ? `<span class="neg">adiantado ${brl(-u.aMedir)}</span>` : u.aMedir > 0.5 ? 'a medir ' + brl(u.aMedir) : ''}</span></li>`).join('')}</ul>` : ''}
+    ${its.length ? `<ul class="rp-list fa-mini">${its.map(i => `<li data-act="fin-edit" data-id="${i.id}" data-p="${pid}" tabindex="0" style="cursor:pointer"><span class="mono muted">${fds(P(i.data))}</span><span>${i.tipo === 'fd' ? 'FD · ' : ''}${esc(i.descricao)}</span><span class="fv">${i.tipo === 'fd' ? '−' : ''}${brl(i.valor)}</span></li>`).join('')}</ul>` : '<p class="muted" style="margin:6px 0 0;font-size:12.5px">Nenhum pagamento ligado a esta atividade.</p>'}
+    <div class="fa-acts"><button type="button" class="btn sm" data-act="fin-new-at" data-p="${pid}" data-a="${aid}">${ic('plus')}Pagamento desta atividade</button><a class="btn sm ghost" href="#financeiro--${pid}" data-act="go-fin" data-p="${pid}">Abrir financeiro</a></div>`;
+}
+function refreshFinBox() { const box = $('#a-fin'); if (box && S.editing && S.editing.id) box.innerHTML = finActBox(S.editing.id); }
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.classList && t.classList.contains('fvin')) saveValor(S.proj, t.dataset.a, t.dataset.s, t.value, t);
+  else if (t.id === 'fin-auto') setAutoDist(S.proj, t.checked);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('fvin')) { e.preventDefault(); e.target.blur(); } });
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  switch (t.dataset.act) {
+    case 'fa-tog': { const id = t.dataset.id; if (S.finOpen.has(id)) S.finOpen.delete(id); else S.finOpen.add(id); render(); break; }
+    case 'fv-clear': saveValor(S.proj, t.dataset.a, t.dataset.s, ''); break;
+    case 'fin-med': openMedicao(S.proj); break;
+    case 'fin-new-at': openFinItem(null, 'pagamento', { pid: t.dataset.p, aid: t.dataset.a }); break;
+    case 'go-fin': e.preventDefault(); closeDrawer(); location.hash = 'financeiro--' + t.dataset.p; break;
+  }
+});
 
 /* ===================== UI: eventos, tooltip, toast, confete ===================== */
 document.addEventListener('click', e => {

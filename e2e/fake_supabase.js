@@ -1,7 +1,7 @@
 // Simulação em memória do cliente Supabase (para testar a interface sem rede)
 (function () {
   const SEED = window.__SEED__;
-  const T = { docs: [], profiles: [], project_members: [], user_state: [], fin_contratos: [], fin_itens: [], fin_log: [], backups: [] };
+  const T = { docs: [], profiles: [], project_members: [], user_state: [], fin_contratos: [], fin_itens: [], fin_log: [], backups: [], fin_valores: [] };
   SEED.docs.forEach(d => T.docs.push({ coll: d.coll, id: d.id, data: JSON.parse(JSON.stringify(d.data)), version: 1 }));
   const metas = SEED.docs.filter(d => d.coll === 'metas').map(d => d.id), FUP = 'q5xvihq5ti1zoqd8g39d', OWNER = 'nlxf5323v1qa1f65bhef';
   T.profiles = [
@@ -53,7 +53,7 @@
       if (table.startsWith('fin_')) rows = rows.filter(r => canFin(r.project_id));
       if (table === 'user_state') rows = rows.filter(r => r.user_id === me);
       if (table === 'backups' && !(p && p.role === 'admin')) rows = [];
-      const flog = (acao, r) => { if (table.startsWith('fin_') && table !== 'fin_log') T.fin_log.unshift({ id: T.fin_log.length + 1, project_id: r.project_id, acao, tipo: table === 'fin_itens' ? r.tipo : 'contrato', item: JSON.parse(JSON.stringify(r)), por: me, em: new Date().toISOString() }); };
+      const flog = (acao, r) => { if (table.startsWith('fin_') && table !== 'fin_log') T.fin_log.unshift({ id: T.fin_log.length + 1, project_id: r.project_id, acao, tipo: table === 'fin_itens' ? r.tipo : table === 'fin_valores' ? 'valor' : 'contrato', item: JSON.parse(JSON.stringify(r)), por: me, em: new Date().toISOString() }); };
       if (q.op === 'insert') { (Array.isArray(q.payload) ? q.payload : [q.payload]).forEach(x => { if (table.startsWith('fin_') && !canFin(x.project_id)) throw new Error('rls'); const r = { id: 'fi-' + Math.random().toString(36).slice(2, 8), created_at: new Date().toISOString(), ...x }; T[table].push(r); flog('insert', r); }); return { data: null, error: null }; }
       rows = rows.filter(r => q.f.every(f => f(r)));
       if (q.op === 'delete') { rows.forEach(r => flog('delete', r)); T[table] = T[table].filter(r => !rows.includes(r)); return { data: null, error: null }; }
