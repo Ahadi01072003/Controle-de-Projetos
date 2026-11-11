@@ -151,6 +151,15 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     const e1 = await q.evaluate(() => window.__T__.docs.find(d => d.id === 'act-et').data.etapas[0]);
     ok(!!e1.fimReal, 'etapa concluída antes do fim planejado');
     ok((await q.$eval('.drow[data-id="act-et"][data-sid="e1"] .dm-txt b', e => e.textContent)) === '100%', 'etapa concluída aparece com 100% no diário');
+    ok(await q.$('.dsec .drow[data-id="act-fut"]') !== null && (await q.$$eval('.dsec-h h3', e => e.map(x => x.textContent))).includes('Antes do previsto'), 'diário mostra "Antes do previsto" com atividade que começa em 3 dias');
+    await q.click('.drow[data-id="act-fut"] [data-act="dset"][data-v="100"]'); await q.waitForTimeout(900);
+    const af = await q.evaluate(() => window.__T__.docs.find(d => d.id === 'act-fut').data);
+    ok(!!af.iniReal && af.iniReal < af.iniPlan, `marcar "Feito" antes do plano registra o início real (${af.iniReal}, plano ${af.iniPlan})`);
+    await go(q, 'atividades--' + FUP);
+    const tag = await q.$eval('tr.row[data-id="act-fut"] .early', e => e.textContent).catch(() => '');
+    ok(/começou 3 d antes/.test(tag), `lista mostra o selo "${tag}"`);
+    const st = await q.$eval('tr.row[data-id="act-fut"] .st', e => e.textContent).catch(() => '');
+    ok(/Em andamento/.test(st), `atividade adiantada fica "${st}"`);
     await go(q, 'atividades--' + FUP); await q.check('#f-done').catch(() => {}); await q.waitForTimeout(300); await q.click('tr.row[data-id="act-early"]').catch(() => {}); await q.waitForTimeout(700);
     const chip = await q.$eval('#drawer .dr-h .st', e => e.textContent).catch(() => '');
     ok(/Concluída no prazo/.test(chip), `ficha mostra "${chip.trim()}"`);

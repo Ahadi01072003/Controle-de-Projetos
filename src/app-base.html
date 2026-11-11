@@ -1524,7 +1524,7 @@ function vAtividades() {
     if (ir == null) return `<span class="muted">—</span>`;
     const pct = x.c.prog != null ? Math.round(x.c.prog) : null, dj = x.c.di && x.c.di.on && !x.c.done;
     const tip = dj ? `Diário: real ${pct}% · planejado ${Math.round(x.c.di.plan)}% (${fmtPP(x.c.di.gap)})${x.c.di.pend.length ? ' · ' + x.c.di.pend.length + ' dias pendentes' : ''}` : `Avanço informado: ${pct}%${!x.c.done ? ' · esperado ' + x.c.esp + '%' : ''}`;
-    return `<div class="exec"><span class="d">${fds(ir)} → ${fr != null ? fds(fr) : '…'}${dj ? ` <span class="dl ${x.c.di.gap < -0.5 ? 'up' : x.c.di.gap > 0.5 ? 'dn' : 'zero'}">${fmtPP(x.c.di.gap)}</span>` : ''}</span>${pct != null ? `<div class="bar" data-tip="${tip}"><i style="width:${pct}%;background:${x.c.done ? stColor(x.c.status) : 'var(--accent)'}"></i></div>` : ''}</div>`;
+    return `<div class="exec"><span class="d">${fds(ir)} → ${fr != null ? fds(fr) : '…'}${dj ? ` <span class="dl ${x.c.di.gap < -0.5 ? 'up' : x.c.di.gap > 0.5 ? 'dn' : 'zero'}">${fmtPP(x.c.di.gap)}</span>` : ''}</span>${pct != null ? `<div class="bar" data-tip="${tip}"><i style="width:${pct}%;background:${x.c.done ? stColor(x.c.status) : 'var(--accent)'}"></i></div>` : ''}${earlyTag(x.c)}</div>`;
   };
   const subSt = x => x.c.status !== x.c.statusOrig && x.c.replan ? `<span class="sub-st">Pela data original: ${ST[x.c.statusOrig].l.toLowerCase()}</span>` : '';
   const qa = x => {
@@ -2038,6 +2038,7 @@ function vDiario() {
   const items = diaryItems(L);
   const inPlan = items.filter(it => D >= it.c.ip && D <= it.c.fp && (!it.c.done || K in it.c.di.log || it.c.fr === D));
   const late = items.filter(it => !it.c.done && it.c.fp < D && !inPlan.includes(it));
+  const early = items.filter(it => !it.c.done && D < it.c.ip && (it.c.ir != null || it.c.ip <= D + 14) && !(K in it.c.di.log)).sort((a, b) => (a.c.ir == null) - (b.c.ir == null) || a.c.ip - b.c.ip);
   const extra = items.filter(it => K in it.c.di.log && !inPlan.includes(it) && !late.includes(it));
   const visible = [...inPlan, ...late, ...extra];
   const reg = visible.filter(it => K in it.c.di.log).length;
@@ -2048,12 +2049,12 @@ function vDiario() {
   const row = (it, tag) => {
     const { x, s, c } = it, di = c.di, v = K in di.log ? di.val(K) : null, st = dayState(v);
     const idx = di.days.indexOf(D);
-    const where = idx >= 0 ? `Dia ${idx + 1} de ${di.N}` : tag === 'late' ? `Fora do plano · fim era ${fds(c.fp)}` : D < c.ip ? 'Antes do início planejado' : (!isWork(D) ? 'Dia não útil' : 'Dia extra');
+    const where = idx >= 0 ? `Dia ${idx + 1} de ${di.N}` : tag === 'late' ? `Fora do plano · fim era ${fds(c.fp)}` : D < c.ip ? `Começa pelo plano em ${fds(c.ip)}${c.ir != null ? '' : ' · pode adiantar'}` : (!isWork(D) ? 'Dia não útil' : 'Dia extra');
     const plan = Math.round(di.plannedAt(D)), real = c.done && c.fr <= D ? 100 : di.realAt(D), gap = real - di.plannedAt(D), dis = ro ? 'disabled' : '', selOn = S.dsel.has(it.key);
     const p = s ? (pessoaById(s.respId) || x.p) : x.p;
     return `<div class="drow ${st ? 'has-' + st : ''} ${selOn ? 'picked' : ''}" data-id="${x.a.id}" ${s ? `data-sid="${s.id}"` : ''} data-key="${it.key}">
       <div class="dl-main"><div class="dl-top">${ro ? '' : `<input type="checkbox" class="dsel" data-key="${it.key}" ${selOn ? 'checked' : ''} aria-label="Selecionar">`}<span class="mono muted">${esc(x.a.codigo || '')}</span>${s ? etBadge(it.si + 1) : ''}<b class="dl-t" data-act="open-act" data-id="${x.a.id}" tabindex="0">${esc(s ? s.nome : x.a.titulo)}</b></div>
-        <div class="dl-sub">${s ? `<span class="muted" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.a.titulo)}</span>` : ''}${whoHTML(p)}<span>${where}</span>${di.pend.length && !c.done ? `<span class="pendtag" data-tip="Dias planejados que passaram sem registro">${di.pend.length} pendente${di.pend.length > 1 ? 's' : ''}</span>` : ''}</div></div>
+        <div class="dl-sub">${s ? `<span class="muted" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.a.titulo)}</span>` : ''}${whoHTML(p)}<span>${where}</span>${earlyTag(c)}${di.pend.length && !c.done ? `<span class="pendtag" data-tip="Dias planejados que passaram sem registro">${di.pend.length} pendente${di.pend.length > 1 ? 's' : ''}</span>` : ''}</div></div>
       <div class="dl-act"><div class="dbtns" role="group" aria-label="Registro do dia">
           <button class="db feito ${st === 'feito' ? 'on' : ''}" data-act="dset" data-v="100" ${dis} aria-pressed="${st === 'feito'}">${ic('check')}Feito</button>
           <button class="db parcial ${st === 'parcial' ? 'on' : ''}" data-act="dpart" ${dis} aria-pressed="${st === 'parcial'}">${st === 'parcial' ? Math.round(v) + '%' : 'Parcial'}</button>
@@ -2086,7 +2087,7 @@ function vDiario() {
     <button class="btn icon ghost sm" data-act="dsel-none" aria-label="Fechar seleção">${ic('fechar')}</button></div>` : '';
   const pendHTML = pendAll.length ? `<div class="card rise"><div class="card-h"><h2>Dias pendentes de registro</h2><span class="sub">clique numa data para registrar</span></div>
     <div class="plist">${pendAll.slice(0, 25).map(it => `<div class="pl-row"><span class="mono muted">${esc(it.x.a.codigo || '')}${it.s ? ' · E' + (it.si + 1) : ''}</span><b>${esc(it.s ? it.s.nome : it.x.a.titulo)}</b><div class="pl-d">${ro ? '' : `<button class="chipb ghost" data-act="pend-all" data-id="${it.x.a.id}" ${it.s ? `data-sid="${it.s.id}"` : ''} data-tip="Marca todos os ${it.c.di.pend.length} dias pendentes como feitos">Todos feitos</button>`}${it.c.di.pend.slice(-12).map(d => `<button class="chipb" data-act="dia-go" data-d="${ISO(d)}">${fds(d)}</button>`).join('')}${it.c.di.pend.length > 12 ? `<span class="muted">+${it.c.di.pend.length - 12}</span>` : ''}</div></div>`).join('')}</div></div>` : '';
-  return `<div class="dwrap">${head}${planHTML}${sec('Atrasadas, ainda em execução', late, 'late', '<span class="muted" style="font-size:12px">o plano já terminou; registros contam como dia extra</span>')}${sec('Outros registros neste dia', extra, 'extra')}${pendHTML}${bulk}</div>`;
+  return `<div class="dwrap">${head}${planHTML}${sec('Atrasadas, ainda em execução', late, 'late', '<span class="muted" style="font-size:12px">o plano já terminou; registros contam como dia extra</span>')}${sec('Antes do previsto', early, 'early', '<span class="muted" style="font-size:12px">começou ou pode começar antes da data planejada; o registro conta como avanço adiantado</span>')}${sec('Outros registros neste dia', extra, 'extra')}${pendHTML}${bulk}</div>`;
 }
 
 /* ===================== REUNIÃO =====================
@@ -2307,7 +2308,7 @@ function openAct(id, preset = {}) {
   const html = `<form id="fa" novalidate style="display:contents">
     <div class="dr-h"><div class="r1">${a ? `<span class="mono muted">${esc(a.codigo || '')}</span>${revMark(c.nRep)}` : `<span class="eyebrow">Nova atividade</span>`}<span class="sp"></span>
       <button type="button" class="btn icon ghost" data-act="close-drawer" aria-label="Fechar">${ic('fechar')}</button></div>
-      ${a ? `<h2 id="drTitle" tabindex="-1">${esc(a.titulo)}</h2><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${chip(c.status, 'lg')}${c.replan && c.statusOrig !== c.status ? `<span class="muted" style="font-size:12.5px">Pela data original: <b style="color:var(--ink)">${ST[c.statusOrig].l}</b></span>` : ''}</div>` : `<h2 id="drTitle">Cadastrar atividade</h2>`}
+      ${a ? `<h2 id="drTitle" tabindex="-1">${esc(a.titulo)}</h2><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${chip(c.status, 'lg')}${earlyTag(c, true)}${c.replan && c.statusOrig !== c.status ? `<span class="muted" style="font-size:12.5px">Pela data original: <b style="color:var(--ink)">${ST[c.statusOrig].l}</b></span>` : ''}</div>` : `<h2 id="drTitle">Cadastrar atividade</h2>`}
     </div>
     <div class="dr-b">
       ${ind}

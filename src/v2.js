@@ -183,7 +183,7 @@ function vMinhas() {
     const due = c.done ? `concluída em ${fds(c.fr)}` : c.fp == null ? '' : c.fp < T ? `venceu ${fds(c.fp)}` : c.fp === T ? 'vence hoje' : c.fp === T + 1 ? 'vence amanhã' : `vence ${fds(c.fp)}`;
     return `<li class="my rise ${isNew ? 'new' : ''}" style="--i:${Math.min(i++, 14)}" data-act="my-open" data-id="${a.id}" data-sid="${u.s ? u.s.id : ''}" tabindex="0">
       <div class="my-b"><div class="my-t">${isNew ? '<span class="newtag">Nova</span>' : ''}${u.s ? etBadge(u.si + 1) : ''}<b>${esc(u.s ? u.s.nome : a.titulo)}</b></div>
-      <div class="my-s">${chip(c.status, 'sm')}<span class="mchip"><i class="dot" style="background:${metaColor(m)}"></i><span>${esc(m.nome)}</span></span>${u.s ? `<span class="muted my-par">em ${esc(a.titulo)}</span>` : ''}${u.apoio ? '<span class="aptag">você no apoio</span>' : ''}</div></div>
+      <div class="my-s">${chip(c.status, 'sm')}${earlyTag(c)}<span class="mchip"><i class="dot" style="background:${metaColor(m)}"></i><span>${esc(m.nome)}</span></span>${u.s ? `<span class="muted my-par">em ${esc(a.titulo)}</span>` : ''}${u.apoio ? '<span class="aptag">você no apoio</span>' : ''}</div></div>
       <span class="my-d ${!c.done && c.fp != null && c.fp < T ? 'hot' : ''}">${due}</span><div class="qa">${btn(u)}</div></li>`;
   };
   const grp = (t, arr, hint = '', cls = '') => arr.length ? `<section class="card my-g ${cls}"><div class="card-h"><h2>${t} <span class="muted" style="font-weight:500">${arr.length}</span></h2>${hint ? `<span class="sub">${hint}</span>` : ''}</div><ul class="my-list">${arr.map(row).join('')}</ul></section>` : '';
@@ -402,3 +402,10 @@ document.addEventListener('click', e => {
   e.stopPropagation(); t.disabled = true;
   finishAt(t.dataset.id, t.dataset.sid || null, t.dataset.d).finally(() => { if (t.isConnected) t.disabled = false; });
 });
+
+/* ---------- início antes do planejado ---------- */
+function earlyTag(c, long = false) {
+  if (!c || c.ir == null || c.ip == null || c.ir >= c.ip) return '';
+  const n = dd(c.ir, c.ip) || (c.ip - c.ir);
+  return `<span class="dl dn early" data-tip="Início real ${fd(c.ir)} · plano atual ${fd(c.ip)}">${long ? 'Começou ' : 'começou '}${n} ${U()} antes</span>`;
+}
