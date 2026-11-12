@@ -2704,7 +2704,7 @@ function openAct(id, preset = {}) {
       ${a ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
       ${a && finVisible(a.metaId) ? `<fieldset class="box fin-box" id="a-fin">${finActBox(a.id)}</fieldset>` : ''}
       ${a && c && c.di && !c.subs ? `<fieldset class="box" id="a-daily">${dailyBoxHTML(a)}</fieldset>` : ''}
-      <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${dis} maxlength="2000">${esc(d.obs || '')}</textarea></div>
+      <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${disx} maxlength="2000" ${mode === 'exec' ? 'placeholder="Anote aqui o que for importante sobre esta atividade"' : ''}>${esc(d.obs || '')}</textarea></div>
       ${hist}
       ${a ? `<p class="muted" style="font-size:12px;margin:0">Cadastrada em ${a.criadoEm ? new Date(a.criadoEm).toLocaleDateString('pt-BR') : '—'} · plano original ${fds(c.io)} → ${fds(c.fo)}</p>` : ''}
       <p class="err" id="a-err" role="alert"></p>
@@ -2737,14 +2737,14 @@ async function saveAct() {
   const a = ed.orig, T = today(), err = $('#a-err');
   if (a && !canManage(a.metaId)) {
     // responsável: só grava a execução (o banco também confere)
-    const ev = { iniReal: $('#a-inir').value || '', fimReal: $('#a-fimr').value || '', progresso: $('#a-progon').checked ? +$('#a-prog').value : null };
+    const ev = { iniReal: $('#a-inir').value || '', fimReal: $('#a-fimr').value || '', progresso: $('#a-progon').checked ? +$('#a-prog').value : null, ...(canLog(a, null) ? { obs: $('#a-obs').value.trim() } : {}) };
     const ir0 = P(ev.iniReal), fr0 = P(ev.fimReal), fail0 = m => { err.textContent = m; return false; };
     if (fr0 != null && ir0 == null) return fail0('Informe o início real antes do fim real.');
     if (ir0 != null && fr0 != null && fr0 < ir0) return fail0('O fim real não pode ser antes do início real.');
     if ((ir0 != null && ir0 > T) || (fr0 != null && fr0 > T)) return fail0('Datas reais não podem estar no futuro.');
     if (fr0 != null && ev.progresso != null) ev.progresso = 100;
     ev.atualizadoEm = nowISO();
-    if (await write(() => db.doc('atividades/' + a.id).update(ev))) { logEvt('edicao', a, `Lançamento: ${[ev.iniReal !== (a.iniReal || '') ? 'início real ' + fds(ir0) : '', ev.fimReal !== (a.fimReal || '') ? 'concluída em ' + fds(fr0) : '', ev.progresso !== (a.progresso ?? null) ? 'avanço ' + ev.progresso + '%' : ''].filter(Boolean).join(', ') || 'sem mudanças'}`); closeDrawer(); toast('Lançamento salvo.', 'ok'); if (fr0 != null && !a.fimReal && fr0 <= P(a.fimPlan)) celebrate(); }
+    if (await write(() => db.doc('atividades/' + a.id).update(ev))) { logEvt('edicao', a, `Lançamento: ${[ev.iniReal !== (a.iniReal || '') ? 'início real ' + fds(ir0) : '', ev.fimReal !== (a.fimReal || '') ? 'concluída em ' + fds(fr0) : '', ev.progresso !== (a.progresso ?? null) ? 'avanço ' + ev.progresso + '%' : '', 'obs' in ev && ev.obs !== (a.obs || '') ? 'observações' : ''].filter(Boolean).join(', ') || 'sem mudanças'}`); closeDrawer(); toast('Lançamento salvo.', 'ok'); if (fr0 != null && !a.fimReal && fr0 <= P(a.fimPlan)) celebrate(); }
     return;
   }
   const v = {

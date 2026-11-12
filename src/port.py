@@ -103,6 +103,7 @@ R("""id="a-inir" value="${esc(d.iniReal || '')}" max="${ISO(T)}" ${dis}>${ro ?""
 R("""id="a-fimr" value="${esc(d.fimReal || '')}" max="${ISO(T)}" ${dis}>${ro ?""", """id="a-fimr" value="${esc(d.fimReal || '')}" max="${ISO(T)}" ${disx}>${ro ?""")
 R("""id="a-progon" ${d.progresso != null ? 'checked' : ''} ${dis}>""", """id="a-progon" ${d.progresso != null ? 'checked' : ''} ${disx}>""")
 R("""value="${d.progresso ?? 0}" ${dis}><output id="a-progout">""", """value="${d.progresso ?? 0}" ${disx}><output id="a-progout">""")
+R("""<textarea class="inp" id="a-obs" ${dis} maxlength="2000">""", """<textarea class="inp" id="a-obs" ${disx} maxlength="2000" ${mode === 'exec' ? 'placeholder="Anote aqui o que for importante sobre esta atividade"' : ''}>""")
 R("""${ro ? '' : '<option value="__new">＋ Cadastrar novo projeto…</option>'}""", """${mode === 'full' && S.isAdmin ? '<option value="__new">＋ Cadastrar novo projeto…</option>' : ''}""")
 R("""${ro ? '' : '<option value="__new">＋ Cadastrar nova pessoa…</option>'}""", """${mode === 'full' ? '<option value="__new">＋ Cadastrar nova pessoa…</option>' : ''}""")
 R("""<div class="dr-f">${a && !ro ? `<button type="button" class="btn danger sm" data-act="del-act\"""", """<div class="dr-f">${a && mode === 'full' ? `<button type="button" class="btn danger sm" data-act="del-act\"""")
@@ -110,14 +111,14 @@ R("""  const a = ed.orig, T = today(), err = $('#a-err');
   const v = {""", """  const a = ed.orig, T = today(), err = $('#a-err');
   if (a && !canManage(a.metaId)) {
     // responsável: só grava a execução (o banco também confere)
-    const ev = { iniReal: $('#a-inir').value || '', fimReal: $('#a-fimr').value || '', progresso: $('#a-progon').checked ? +$('#a-prog').value : null };
+    const ev = { iniReal: $('#a-inir').value || '', fimReal: $('#a-fimr').value || '', progresso: $('#a-progon').checked ? +$('#a-prog').value : null, ...(canLog(a, null) ? { obs: $('#a-obs').value.trim() } : {}) };
     const ir0 = P(ev.iniReal), fr0 = P(ev.fimReal), fail0 = m => { err.textContent = m; return false; };
     if (fr0 != null && ir0 == null) return fail0('Informe o início real antes do fim real.');
     if (ir0 != null && fr0 != null && fr0 < ir0) return fail0('O fim real não pode ser antes do início real.');
     if ((ir0 != null && ir0 > T) || (fr0 != null && fr0 > T)) return fail0('Datas reais não podem estar no futuro.');
     if (fr0 != null && ev.progresso != null) ev.progresso = 100;
     ev.atualizadoEm = nowISO();
-    if (await write(() => db.doc('atividades/' + a.id).update(ev))) { logEvt('edicao', a, `Lançamento: ${[ev.iniReal !== (a.iniReal || '') ? 'início real ' + fds(ir0) : '', ev.fimReal !== (a.fimReal || '') ? 'concluída em ' + fds(fr0) : '', ev.progresso !== (a.progresso ?? null) ? 'avanço ' + ev.progresso + '%' : ''].filter(Boolean).join(', ') || 'sem mudanças'}`); closeDrawer(); toast('Lançamento salvo.', 'ok'); if (fr0 != null && !a.fimReal && fr0 <= P(a.fimPlan)) celebrate(); }
+    if (await write(() => db.doc('atividades/' + a.id).update(ev))) { logEvt('edicao', a, `Lançamento: ${[ev.iniReal !== (a.iniReal || '') ? 'início real ' + fds(ir0) : '', ev.fimReal !== (a.fimReal || '') ? 'concluída em ' + fds(fr0) : '', ev.progresso !== (a.progresso ?? null) ? 'avanço ' + ev.progresso + '%' : '', 'obs' in ev && ev.obs !== (a.obs || '') ? 'observações' : ''].filter(Boolean).join(', ') || 'sem mudanças'}`); closeDrawer(); toast('Lançamento salvo.', 'ok'); if (fr0 != null && !a.fimReal && fr0 <= P(a.fimPlan)) celebrate(); }
     return;
   }
   const v = {""")

@@ -24,6 +24,11 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   const tit = await p.$eval('#bellPop .al .al-t', e => e.textContent.trim());
   await p.click('#bellPop .al'); await p.waitForTimeout(900);
   ok((await p.$eval('#drTitle', e => e.textContent.trim())) === tit, 'clicar no aviso abre a ficha da atividade');
+  ok(await p.$eval('#a-obs', e => !e.disabled) && await p.$eval('#a-titulo', e => e.disabled), 'responsável edita as observações da própria atividade (o resto continua travado)');
+  const actId = await p.evaluate(() => S.editing && S.editing.id);
+  await p.fill('#a-obs', 'Material chega na sexta'); await p.click('#fa button[type=submit]'); await p.waitForTimeout(900);
+  ok(await T(p, id => (window.__T__.docs.find(d => d.id === id) || {}).data.obs, actId) === 'Material chega na sexta', 'observação do responsável gravada');
+  await p.click(`[data-act="my-open"][data-id="${actId}"]`).catch(() => {}); await p.waitForTimeout(700);
   await p.keyboard.press('Escape'); await p.waitForTimeout(800);
   const st = await T(p, () => window.__T__.user_state[0] && Object.keys(window.__T__.user_state[0].data.lidas).length);
   ok(st >= 1, 'aviso lido gravado no banco (user_state)');
