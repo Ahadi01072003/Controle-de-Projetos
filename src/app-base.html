@@ -1837,7 +1837,9 @@ function openSubModal(aid, sid) {
         S.modalCancel = null;
         const r = await askReplan({ codigo: `${cur.codigo} · E${k + 1}`, titulo: old.nome, iniOrig: old.iniOrig || old.iniPlan, fimOrig: old.fimOrig || old.fimPlan, iniPlan: old.iniPlan, fimPlan: old.fimPlan, replans }, v.iniPlan, v.fimPlan);
         if (!r) { openSubModal(aid, sid); return; }
-        replans = [...replans, { em: nowISO(), por: S.userId, iniDe: old.iniPlan, iniPara: v.iniPlan, fimDe: old.fimPlan, fimPara: v.fimPlan, motivo: r.motivo, comentario: r.comentario }];
+        const mud = { em: nowISO(), por: S.userId, iniDe: old.iniPlan, iniPara: v.iniPlan, fimDe: old.fimPlan, fimPara: v.fimPlan, comentario: r.comentario };
+        if (r.tipo === 'correcao') { old.correcoes = [...(old.correcoes || []), mud]; if (!replans.length) { old.iniOrig = v.iniPlan; old.fimOrig = v.fimPlan; } }
+        else replans = [...replans, { ...mud, motivo: r.motivo }];
       }
       list[k] = { ...old, ...v, iniOrig: old.iniOrig || old.iniPlan, fimOrig: old.fimOrig || old.fimPlan, replans, ...(v.respId && v.respId !== (old.respId || '') ? { atribuidoEm: nowISO(), atribuidoPor: S.userId } : {}) };
       msg = ch ? `E${k + 1} · ${v.nome} replanejada: ${fds(P(old.iniPlan))}→${fds(ip)}, ${fds(P(old.fimPlan))}→${fds(fp)}` : `E${k + 1} · ${v.nome} editada`;
@@ -2299,12 +2301,12 @@ function openAct(id, preset = {}) {
     ${vb('Variação da duração', fdelta(c.dDur) + (c.dDur ? ` <small style="font-size:11px;font-weight:500">(${c.dDurPct > 0 ? '+' : '−'}${Math.abs(Math.round(c.dDurPct))}%)</small>` : ''), cls(c.dDur))}
     ${c.done ? vb('Fim real vs. plano atual', fdelta(c.desvio), cls(c.desvio)) : c.canc ? vb('Situação', 'Cancelada') : vb(c.rest < 0 ? 'Atraso vs. plano atual' : 'Prazo do plano atual', c.rest < 0 ? fdelta(-c.rest) : c.rest === 0 ? 'vence hoje' : 'faltam ' + c.rest + ' ' + U(), c.rest < 0 ? 'up' : '')}
   </div>` : '';
-  const hist = a && (a.replans || []).length ? `<div><div class="eyebrow" style="margin-bottom:6px">Histórico de replanejamentos</div><ul class="tl">${a.replans.map((r, i) => {
+  const hist = a && ((a.replans || []).length || (a.correcoes || []).length) ? `<div><div class="eyebrow" style="margin-bottom:6px">Histórico de replanejamentos</div><ul class="tl">${a.replans.map((r, i) => {
       const dt = new Date(r.em), ch = [];
       if (r.iniDe !== r.iniPara) ch.push(`Início ${fds(P(r.iniDe))} → ${fds(P(r.iniPara))} ${dlt(dd(P(r.iniDe), P(r.iniPara)))}`);
       if (r.fimDe !== r.fimPara) ch.push(`Fim ${fds(P(r.fimDe))} → ${fds(P(r.fimPara))} ${dlt(dd(P(r.fimDe), P(r.fimPara)))}`);
-      return `<li><div class="mk">${revSvg(i + 1)}</div><div><div class="hd"><b>Revisão ${i + 1}</b><span class="when">${isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR')}${r.por && personName(r.por) ? ' · ' + esc(personName(r.por)) : ''}</span></div><div class="ch">${ch.join('<span>·</span>')}</div><div class="why"><span class="mot">${esc(MOTIVOS[r.motivo] || 'Outro')}</span>${esc(r.comentario || '')}</div></div></li>`;
-    }).reverse().join('')}</ul></div>` : '';
+      return `<li><div class="mk">${revSvg(i + 1)}</div><div><div class="hd"><b>Revisão ${i + 1}</b><span class="when">${isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR')}${r.por && personName(r.por) ? ' · ' + esc(personName(r.por)) : ''}</span></div><div class="ch">${ch.join('<span>·</span>')}</div><div class="why"><span class="mot">${esc(MOTIVOS[r.motivo] || 'Outro')}</span>${esc(r.comentario || '')}</div>${canManage(a.metaId) ? `<button type="button" class="lnk rp-fix" data-act="rp-fix" data-id="${a.id}" data-i="${i}">Foi erro de cadastro? Reclassificar como correção</button>` : ''}</div></li>`;
+    }).reverse().join('')}</ul>${corrList(a.correcoes)}</div>` : '';
   const html = `<form id="fa" novalidate style="display:contents">
     <div class="dr-h"><div class="r1">${a ? `<span class="mono muted">${esc(a.codigo || '')}</span>${revMark(c.nRep)}` : `<span class="eyebrow">Nova atividade</span>`}<span class="sp"></span>
       <button type="button" class="btn icon ghost" data-act="close-drawer" aria-label="Fechar">${ic('fechar')}</button></div>
@@ -2406,18 +2408,23 @@ async function saveAct() {
   if (changed) {
     const r = await askReplan(a, v.iniPlan, v.fimPlan);
     if (!r) return;
-    patch.replans = [...(a.replans || []), { em: nowISO(), por: S.userId, iniDe: a.iniPlan, iniPara: v.iniPlan, fimDe: a.fimPlan, fimPara: v.fimPlan, motivo: r.motivo, comentario: r.comentario }];
+    const mud = { em: nowISO(), por: S.userId, iniDe: a.iniPlan, iniPara: v.iniPlan, fimDe: a.fimPlan, fimPara: v.fimPlan, comentario: r.comentario };
+    if (r.tipo === 'correcao') { patch.correcoes = [...(a.correcoes || []), mud]; if (!(a.replans || []).length) { patch.iniOrig = v.iniPlan; patch.fimOrig = v.fimPlan; } patch.corrigida = true; }
+    else patch.replans = [...(a.replans || []), { ...mud, motivo: r.motivo }];
   }
-  const wasDone = !!a.fimReal;
+  const wasDone = !!a.fimReal, corrFlag = !!patch.corrigida; delete patch.corrigida;
   if (await write(() => db.doc('atividades/' + a.id).update(patch))) {
+    patch.corrigida = corrFlag;
     const LBL = { titulo: 'nome', metaId: 'projeto', respId: 'responsável', apoioIds: 'apoio', prioridade: 'prioridade', peso: 'peso', iniReal: 'início real', fimReal: 'fim real', progresso: 'avanço', manual: 'situação', obs: 'observações' };
     const chg = Object.keys(LBL).filter(k => JSON.stringify(v[k] ?? (k === 'apoioIds' ? [] : '')) !== JSON.stringify(a[k] ?? (k === 'apoioIds' ? [] : ''))).map(k => LBL[k]);
-    if (changed) logEvt('replan', a, `Replanejada: ${fds(P(a.iniPlan))}→${fds(P(v.iniPlan))}, ${fds(P(a.fimPlan))}→${fds(P(v.fimPlan))} · ${MOTIVOS[patch.replans[patch.replans.length - 1].motivo]}`);
+    const corr = !!patch.corrigida; delete patch.corrigida;
+    if (changed && corr) logEvt('edicao', a, `Datas corrigidas (erro de cadastro, não é replanejamento): ${fds(P(a.iniPlan))}→${fds(P(v.iniPlan))}, ${fds(P(a.fimPlan))}→${fds(P(v.fimPlan))}`);
+    else if (changed) logEvt('replan', a, `Replanejada: ${fds(P(a.iniPlan))}→${fds(P(v.iniPlan))}, ${fds(P(a.fimPlan))}→${fds(P(v.fimPlan))} · ${MOTIVOS[patch.replans[patch.replans.length - 1].motivo]}`);
     if (chg.length) logEvt('edicao', a, `Alterado: ${chg.join(', ')}${v.fimReal && !a.fimReal ? ` · concluída em ${fds(P(v.fimReal))}` : ''}`);
     closeDrawer(); S.flash = a.id; setTimeout(() => S.flash = null, 1700);
     const fo = P(v.fimPlan);
     if (!wasDone && fr != null) { if (fr <= fo) { celebrate(); toast('Concluída dentro do prazo planejado.', 'ok'); } else toast(`Concluída com ${fdelta(dd(fo, fr))} de atraso em relação ao plano atual.`, 'warn'); }
-    else toast(changed ? `Replanejamento registrado (revisão ${patch.replans.length}).` : 'Alterações salvas.', 'ok');
+    else toast(changed ? (corr ? 'Datas corrigidas. Não conta como replanejamento.' : `Replanejamento registrado (revisão ${patch.replans.length}).`) : 'Alterações salvas.', 'ok');
   }
 }
 function nextCode() {
@@ -2434,42 +2441,51 @@ function askReplan(a, ini, fim) {
     const durO = dur(io, fo), dDur = dur(ni, nf) - durO;
     const row = (l, de, para, vsAnt, vsOrig) => `<tr><td>${l}</td><td class="mono">${fds(de)}</td><td class="mono"><b>${fds(para)}</b></td><td>${dlt(vsAnt)}</td><td>${dlt(vsOrig)}</td></tr>`;
     openModal(`<form id="frp" novalidate>
-      <div class="md-h"><h3>Registrar replanejamento</h3><p>${esc(a.codigo || '')} · ${esc(a.titulo)}</p></div>
+      <div class="md-h"><h3>Mudança nas datas planejadas</h3><p>${esc(a.codigo || '')} · ${esc(a.titulo)}</p></div>
       <div class="md-b">
+        <div class="f"><span class="lab">O que é esta mudança?</span><div class="seg-ctl rp-tipo"><label><input type="radio" name="rp-tipo" value="replan" checked>Replanejamento</label><label><input type="radio" name="rp-tipo" value="correcao">Correção de erro de cadastro</label></div>
+          <span class="hint" id="rp-th">O prazo mudou de fato: conta como replanejamento, com motivo, e a variação é medida contra o plano original.</span></div>
         <div class="revcard"><div class="rh">${revSvg(n)}Revisão ${n}</div>
           <table><thead><tr><th></th><th>De</th><th>Para</th><th>vs. anterior</th><th>vs. original</th></tr></thead><tbody>
           ${row('Início', oi, ni, dd(oi, ni), dd(io, ni))}${row('Fim', of, nf, dd(of, nf), dd(fo, nf))}
           <tr><td>Duração</td><td class="mono">${dur(oi, of)} ${U()}</td><td class="mono"><b>${dur(ni, nf)} ${U()}</b></td><td>${dlt(dur(ni, nf) - dur(oi, of))}</td><td>${dlt(dDur)}${dDur && durO ? ` <span class="muted" style="font-size:11.5px">${dDur > 0 ? '+' : '−'}${Math.abs(Math.round(dDur / durO * 100))}%</span>` : ''}</td></tr>
           </tbody></table></div>
-        <div class="f"><span class="lab">Motivo <span class="req">*</span></span><div class="chips">${Object.entries(MOTIVOS).map(([k, l]) => `<label><input type="radio" name="rp-mot" value="${k}">${l}</label>`).join('')}</div></div>
-        <div class="f"><label for="rp-txt">Justificativa <span class="req">*</span></label><textarea class="inp" id="rp-txt" maxlength="600" placeholder="O que aconteceu e o que muda a partir de agora"></textarea></div>
-        <p class="muted" style="margin:0;font-size:12.5px">A data original (${fds(io)} → ${fds(fo)}) continua guardada como referência das variações. O atraso passa a ser medido pelo novo plano.</p>
+        <div id="rp-motw"><div class="f"><span class="lab">Motivo <span class="req">*</span></span><div class="chips">${Object.entries(MOTIVOS).map(([k, l]) => `<label><input type="radio" name="rp-mot" value="${k}">${l}</label>`).join('')}</div></div>
+        <div class="f"><label for="rp-txt" id="rp-txl">Justificativa <span class="req">*</span></label><textarea class="inp" id="rp-txt" maxlength="600" placeholder="O que aconteceu e o que muda a partir de agora"></textarea></div>
+        </div><p class="muted" id="rp-note" style="margin:0;font-size:12.5px">A data original (${fds(io)} → ${fds(fo)}) continua guardada como referência das variações. O atraso passa a ser medido pelo novo plano.</p>
         <p class="err" id="rp-err" role="alert"></p>
       </div>
       <div class="md-f"><button type="button" class="btn ghost" data-act="close-modal">Voltar e revisar</button><button type="submit" class="btn primary">${ic('rev')}Confirmar replanejamento</button></div></form>`);
     S.modalCancel = () => res(null);
+    const noRep = !(a.replans || []).length;
+    const syncT = () => { const c = ($('input[name="rp-tipo"]:checked') || {}).value === 'correcao';
+      $('#rp-motw').style.display = c ? 'none' : ''; $('#frp .rh').innerHTML = c ? ic('editar') + 'Correção de cadastro' : revSvg(n) + 'Revisão ' + n; $('#frp button[type=submit]').innerHTML = c ? ic('check') + 'Confirmar correção' : ic('rev') + 'Confirmar replanejamento';
+      $('#rp-th').textContent = c ? 'As datas estavam erradas no cadastro: não conta como replanejamento, não entra nos indicadores e fica registrado só como correção.' : 'O prazo mudou de fato: conta como replanejamento, com motivo, e a variação é medida contra o plano original.';
+      $('#rp-note').textContent = c ? (noRep ? 'O plano original também passa a ser estas novas datas.' : 'Esta etapa/atividade já tem replanejamentos: o plano original continua o mesmo e só o plano atual é corrigido.') : `A data original (${fds(io)} → ${fds(fo)}) continua guardada como referência das variações. O atraso passa a ser medido pelo novo plano.`; };
+    $$('input[name="rp-tipo"]').forEach(r => r.addEventListener('change', syncT));
     $('#frp').addEventListener('submit', e => {
       e.preventDefault();
       const mot = ($('input[name="rp-mot"]:checked') || {}).value, txt = $('#rp-txt').value.trim();
+      if (($('input[name="rp-tipo"]:checked') || {}).value === 'correcao') { S.modalCancel = null; closeModal(); res({ tipo: 'correcao', comentario: txt }); return; }
       if (!mot) { $('#rp-err').textContent = 'Escolha o motivo do replanejamento.'; return; }
       if (txt.length < 5) { $('#rp-err').textContent = 'Escreva uma justificativa (pelo menos 5 caracteres).'; $('#rp-txt').focus(); return; }
-      S.modalCancel = null; closeModal(); res({ motivo: mot, comentario: txt });
+      S.modalCancel = null; closeModal(); res({ tipo: 'replan', motivo: mot, comentario: txt });
     });
   });
 }
 
 /* ações rápidas */
-async function quickStart(id) {
+async function quickStart(id, when) {
   const a = S.atividades.find(x => x.id === id); if (!a) return;
-  const T = ISO(today());
+  const T = when || ISO(today());
   if (await write(() => db.doc('atividades/' + id).update({ iniReal: T, atualizadoEm: nowISO() }))) {
     logEvt('edicao', a, `Iniciada em ${fds(P(T))}`);
-    toast(`${a.codigo} iniciada hoje.`, 'ok', 'Desfazer', () => write(() => db.doc('atividades/' + id).update({ iniReal: a.iniReal || '', atualizadoEm: nowISO() })));
+    toast(`${a.codigo} iniciada ${T === ISO(today()) ? 'hoje' : 'em ' + fds(P(T))}.`, 'ok', 'Desfazer', () => write(() => db.doc('atividades/' + id).update({ iniReal: a.iniReal || '', atualizadoEm: nowISO() })));
   }
 }
-async function quickFinish(id, el) {
+async function quickFinish(id, el, when) {
   const a = S.atividades.find(x => x.id === id); if (!a) return;
-  const T = today(), fo = P(a.fimPlan), rect = el && el.getBoundingClientRect();
+  const T = when ? P(when) : today(), fo = P(a.fimPlan), rect = el && el.getBoundingClientRect();
   const patch = { fimReal: ISO(T), atualizadoEm: nowISO() };
   if (a.progresso != null) patch.progresso = 100;
   if (await write(() => db.doc('atividades/' + id).update(patch))) {
@@ -2943,8 +2959,8 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'new-act': if (S.canWrite) openAct(null); break;
     case 'open-act': openAct(id); break;
-    case 'start': quickStart(id); break;
-    case 'finish': quickFinish(id, t); break;
+    case 'start': askWhen('ini', id).then(d => d && quickStart(id, d)); break;
+    case 'finish': askWhen('fim', id).then(d => d && quickFinish(id, t, d)); break;
     case 'resume': write(() => db.doc('atividades/' + id).update({ manual: null, atualizadoEm: nowISO() })).then(ok => ok && toast('Atividade retomada.', 'ok')); break;
     case 'st-toggle': { const k = t.dataset.k; S.f.st = S.f.st.includes(k) ? S.f.st.filter(x => x !== k) : [...S.f.st, k]; savePrefs(); render(); break; }
     case 'st-go': S.f = { ...S.f, q: '', meta: '', resp: '', rep: false, st: t.dataset.k.split(',') }; savePrefs(); go('atividades'); break;
@@ -2972,9 +2988,9 @@ document.addEventListener('click', e => {
     case 'sub-exp-all': acts().forEach(x => { if (x.c.subs) S.open.add(x.a.id); }); savePrefs(); render(); break;
     case 'sub-col-all': acts().forEach(x => S.open.delete(x.a.id)); savePrefs(); render(); break;
     case 'new-sub': openSubModal(id, null); break;
-    case 'edit-sub': if (S.canWrite) openSubModal(id, t.dataset.sid); else openAct(id); break;
-    case 'sub-start': subSetDates(id, t.dataset.sid, 'ini', ISO(today())); break;
-    case 'sub-finish': subSetDates(id, t.dataset.sid, 'fim', ISO(today())); break;
+    case 'edit-sub': openEtapa(id, t.dataset.sid); break;
+    case 'sub-start': { const sid = t.dataset.sid; askWhen('ini', id, sid).then(d => d && subSetDates(id, sid, 'ini', d)); break; }
+    case 'sub-finish': { const sid = t.dataset.sid; askWhen('fim', id, sid).then(d => d && subSetDates(id, sid, 'fim', d)); break; }
     case 'sub-up': subMove(id, t.dataset.sid, -1); break;
     case 'sub-down': subMove(id, t.dataset.sid, 1); break;
     case 'sub-del': subDelete(id, t.dataset.sid, t); break;

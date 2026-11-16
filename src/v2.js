@@ -134,7 +134,7 @@ function openAlert(k) {
 function openActAt(id, sid) {
   const a = findAct(id); if (!a) return;
   const h = projHash('atividades', a.metaId || '_none');
-  const go2 = () => { openAct(id); if (sid) setTimeout(() => focusSub(sid), 380); };
+  const go2 = () => { if (sid) openEtapa(id, sid); else openAct(id); };
   if (location.hash.slice(1) !== h && S.view !== 'minhas') { location.hash = h; setTimeout(go2, 140); } else go2();
 }
 function focusSub(sid) {
@@ -337,7 +337,7 @@ function openHelp() {
 function v2After() {
   const ids = ['btnImport', 'btnExport', 'btnEditProj', 'btnConfig'];
   const bm = $('#btnMore'); if (bm) bm.hidden = ids.every(id => $('#' + id).hidden);
-  renderBell(); renderMobileNav();
+  renderBell(); renderMobileNav(); etapaRefresh();
   document.body.classList.toggle('in-proj', !!S.proj);
 }
 
@@ -361,7 +361,7 @@ document.addEventListener('click', e => {
       const sid = t.dataset.sid || null, o = alerts().find(z => z.t === 'nova' && z.x.a.id === t.dataset.id && (z.s ? z.s.id : null) === sid && !z.lida);
       if (o) markRead([o.k]);
       if (S.presI != null) closePresent();
-      openAct(t.dataset.id); if (sid) setTimeout(() => focusSub(sid), 380); break; }
+      if (sid) openEtapa(t.dataset.id, sid); else openAct(t.dataset.id); break; }
     case 'prod-hide': S.prodHide = !S.prodHide; render(); refreshPresent(); break;
     case 'prod-tog': { const p = t.dataset.p; if (S.prodOpen.has(p)) S.prodOpen.delete(p); else S.prodOpen.add(p); render(); refreshPresent(); break; }
     case 'merge-pessoa': e.stopPropagation(); openMergePessoa(t.dataset.id); break;

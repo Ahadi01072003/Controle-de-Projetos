@@ -305,3 +305,14 @@ table.tbl.mdtbl{min-width:0;width:100%;table-layout:fixed}
 .fd-m{font-size:9px;font-weight:700;color:var(--muted);margin-left:3px;letter-spacing:.04em}
 .exec .early{align-self:flex-start;margin-top:1px}
 .dr-h .early{font-size:12px;padding:3px 8px}
+
+/* ficha da etapa, correções de cadastro */
+.et-parent{display:inline-flex;gap:6px;align-items:center;margin-top:10px;border:0;background:var(--surface-2);border-radius:8px;padding:6px 10px;font-size:12.5px;color:var(--ink-2);cursor:pointer;text-align:left}
+.et-parent:hover{background:var(--sunken);color:var(--ink)}
+.et-parent .ic{width:14px;height:14px}
+.rp-fix{display:block;margin-top:6px;font-size:12px}
+.corr-l{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.corr-l li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;background:var(--surface-2);border-radius:8px;padding:7px 9px}
+.corr-l li .ic{width:14px;height:14px;color:var(--muted);margin-top:2px}
+.corr-l li div{display:flex;flex-direction:column;gap:2px}
+.rp-tipo label{flex:1;justify-content:center}

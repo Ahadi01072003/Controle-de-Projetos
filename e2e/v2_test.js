@@ -171,6 +171,50 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     await ctx.close();
   }
 
+  // 5b. datas reais escolhidas, correção de cadastro × replanejamento, ficha da etapa
+  {
+    const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } }); const q = await ctx.newPage();
+    q.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+    await q.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};window.__DAILY__=1;\n${fake}` }));
+    await login(q, 'gestor@teste.com'); await go(q, 'atividades--' + FUP);
+    const yest = await q.evaluate(() => ISO(today() - 1));
+    // Iniciar pergunta a data
+    const startBtn = await q.$('.tbl tr.row [data-act="start"]'); const sid0 = startBtn && await startBtn.evaluate(b => b.dataset.id);
+    await startBtn.click(); await q.waitForTimeout(400);
+    ok(await q.$('#fw') !== null, '"Iniciar" pergunta a data em vez de gravar hoje direto');
+    await q.fill('#fw-d', yest); await q.click('#fw button[type=submit]'); await q.waitForTimeout(800);
+    ok(await T(q, id => window.__T__.docs.find(d => d.id === id).data.iniReal, sid0) === yest, `início real gravado na data escolhida (${yest})`);
+    // correção de cadastro: não conta como replanejamento e corrige o plano original
+    const tgt = await q.evaluate(() => { const d = window.__T__.docs.find(x => x.coll === 'atividades' && x.data.metaId === 'q5xvihq5ti1zoqd8g39d' && !(x.data.replans || []).length && !(x.data.etapas || []).length && !x.data.fimReal); return d && { id: d.id, fim: d.data.fimPlan }; });
+    await go(q, 'atividades--' + FUP); await q.click(`tr.row[data-id="${tgt.id}"]`); await q.waitForTimeout(700);
+    const novoFim = await q.evaluate(f => ISO(P(f) + 2), tgt.fim);
+    await q.fill('#a-fim', novoFim); await q.click('#fa button[type=submit]'); await q.waitForTimeout(500);
+    ok(await q.$('input[name="rp-tipo"][value="correcao"]') !== null, 'ao mudar o plano, o gestor escolhe entre replanejamento e correção');
+    await q.click('.rp-tipo label:has(input[value="correcao"])'); await q.click('#frp button[type=submit]'); await q.waitForTimeout(900);
+    const d1 = await T(q, id => window.__T__.docs.find(d => d.id === id).data, tgt.id);
+    ok(!(d1.replans || []).length && (d1.correcoes || []).length === 1 && d1.fimOrig === novoFim && d1.fimPlan === novoFim, 'correção não vira replanejamento e ajusta o plano original');
+    // reclassificar replanejamento antigo
+    const rep = await q.evaluate(() => { const d = window.__T__.docs.find(x => x.coll === 'atividades' && x.data.metaId === 'q5xvihq5ti1zoqd8g39d' && (x.data.replans || []).length >= 1 && !(x.data.etapas || []).length); return d && { id: d.id, n: d.data.replans.length, fimPara: d.data.replans[0].fimPara }; });
+    await go(q, 'atividades--' + FUP); await q.check('#f-done').catch(() => {}); await q.waitForTimeout(300); await q.click(`tr.row[data-id="${rep.id}"]`); await q.waitForTimeout(700);
+    const btns = await q.$$('[data-act="rp-fix"]'); const last = btns[btns.length - 1];
+    await last.click(); await last.click(); await q.waitForTimeout(900);
+    const d2 = await T(q, id => window.__T__.docs.find(d => d.id === id).data, rep.id);
+    ok((d2.replans || []).length === rep.n - 1 && (d2.correcoes || []).length === 1 && d2.fimOrig === rep.fimPara, `replanejamento 1 reclassificado como correção (${rep.n} → ${(d2.replans || []).length} replanejamentos)`);
+    await q.keyboard.press('Escape'); await q.waitForTimeout(400); await q.close(); await ctx.close();
+    // ficha da etapa, vista pelo responsável
+    const ctx2 = await b.newContext({ viewport: { width: 1400, height: 900 } }); const r2 = await ctx2.newPage(); r2.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+    await r2.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};window.__DAILY__=1;\n${fake}` }));
+    await login(r2, 'resp@teste.com'); await go(r2, 'cronograma--' + FUP);
+    await r2.click('[data-act="tog-sub"][data-id="act-et"]').catch(() => {}); await r2.waitForTimeout(500);
+    await r2.click('.g-label[data-act="edit-sub"][data-sid="e2"]'); await r2.waitForTimeout(800);
+    ok((await r2.$eval('#drTitle', e => e.textContent)) === 'Acabamento', 'clicar na etapa abre a ficha completa da etapa');
+    ok(await r2.$eval('#et-nome', e => e.disabled) && !(await r2.$eval('#et-inir', e => e.disabled)), 'responsável lança na etapa dele, mas não muda o plano');
+    ok(await r2.$('.et-parent') !== null, 'ficha da etapa leva de volta à atividade');
+    await r2.fill('#et-inir', await r2.evaluate(() => ISO(today()))); await r2.click('#fet button[type=submit]'); await r2.waitForTimeout(900);
+    ok(!!(await T(r2, () => window.__T__.docs.find(d => d.id === 'act-et').data.etapas[1].iniReal)), 'início real da etapa salvo pela ficha da etapa');
+    await ctx2.close();
+  }
+
   // 6. celular: barra de baixo e "Mais" com sair
   p = await open(390, 844); await login(p, 'admin@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$eval('#mnav', e => getComputedStyle(e).display !== 'none' && e.querySelectorAll('a').length >= 4), 'barra de navegação embaixo no celular');
