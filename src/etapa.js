@@ -105,7 +105,7 @@ function openEtapa(aid, sid) {
         ${daily ? `<div class="planhint">${ic('cal')}<span>O avanço vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>`
           : `<div class="f"><label for="et-prog">Avanço da etapa (%)</label><div class="range"><input type="range" id="et-prog" min="0" max="100" step="5" value="${s.progresso != null ? s.progresso : 0}" ${disx}><output id="et-progout">${s.progresso != null ? s.progresso : 0}%</output></div></div>`}
       </fieldset>
-      <details class="more-d" id="et-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span><span class="muted">${[`responsável ${esc(resp ? resp.nome : '—')}`, `peso ${+s.peso || 1}`, reps.length ? `${reps.length} ${reps.length === 1 ? 'replanejamento' : 'replanejamentos'}` : '', fin ? 'financeiro' : '', daily ? 'diário' : ''].filter(Boolean).join(' · ')}</span></summary><div class="more-b">
+      <details class="more-d" id="et-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span><span class="muted">${[`responsável ${esc(resp ? resp.nome : '—')}`, `peso ${+s.peso || 1}`, reps.length ? `${reps.length} ${reps.length === 1 ? 'replanejamento' : 'replanejamentos'}` : '', fin ? 'financeiro' : '', daily ? 'diário' : ''].filter(Boolean).join(' · ')}</span></summary><div class="more-bd">
         ${ind}
         <div class="fgrid">
           <div class="f full"><label for="et-nome">Nome da etapa</label><input class="inp" id="et-nome" value="${esc(s.nome)}" maxlength="120" ${dis}></div>

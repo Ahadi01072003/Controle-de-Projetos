@@ -409,3 +409,43 @@ function earlyTag(c, long = false) {
   const n = dd(c.ir, c.ip) || (c.ip - c.ir);
   return `<span class="dl dn early" data-tip="Início real ${fd(c.ir)} · plano atual ${fd(c.ip)}">${long ? 'Começou ' : 'começou '}${n} ${U()} antes</span>`;
 }
+
+/* ---------- cronograma: coluna de nomes ajustável (como no Excel) e rótulos dos meses ---------- */
+const GLW_KEY = 'controle-projetos.glw';
+try { const v = +localStorage.getItem(GLW_KEY); if (v) S.gLw = v; } catch (e) {}
+function ganttLw() { const def = innerWidth <= 600 ? 132 : innerWidth <= 900 ? 170 : 270; return Math.max(110, Math.min(S.gLw || def, Math.max(160, innerWidth - 160))); }
+function ganttAvailGuess() { const v = $('#view'); if (!v) return innerWidth - 40; const cs = getComputedStyle(v); return v.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2; }
+addEventListener('resize', () => { S.gAvail = 0; });
+function monthLabel(dt, w) {
+  const m = dt.getUTCMonth(), y = dt.getUTCFullYear(), nome = MESL[m].charAt(0).toUpperCase() + MESL[m].slice(1), cur = MES[m].charAt(0).toUpperCase() + MES[m].slice(1);
+  // um só padrão: "Novembro 2026"; se o mês não couber inteiro, "Nov 2026"; mês muito curto na ponta fica sem rótulo
+  const full = `${nome} ${y}`, mid = `${cur} ${y}`;
+  const t = w >= full.length * 7.4 + 18 ? full : w >= mid.length * 7.4 + 16 ? mid : ''; return t ? `<span>${t}</span>` : '';
+}
+function setGanttLw(lw, save) {
+  const g = $('.gantt'); if (!g) return;
+  lw = Math.round(Math.max(110, Math.min(lw, innerWidth - 160)));
+  g.style.setProperty('--lw', lw + 'px'); g.style.width = (lw + (+g.dataset.w || 0)) + 'px';
+  if (save) { S.gLw = lw; S.gAvail = 0; try { localStorage.setItem(GLW_KEY, String(lw)); } catch (e) {} render(); }
+}
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest && e.target.closest('.g-rs'); if (!h) return;
+  e.preventDefault(); e.stopPropagation();
+  const g = $('.gantt'), x0 = e.clientX, lw0 = parseFloat(getComputedStyle(g).getPropertyValue('--lw')) || ganttLw();
+  g.classList.add('resizing'); document.body.classList.add('col-resizing'); hideTip();
+  const mv = ev => setGanttLw(lw0 + ev.clientX - x0, false);
+  const up = ev => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); g.classList.remove('resizing'); document.body.classList.remove('col-resizing'); if (Math.abs(ev.clientX - x0) > 1) setGanttLw(lw0 + ev.clientX - x0, true); };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up);
+});
+document.addEventListener('dblclick', e => {
+  const h = e.target.closest && e.target.closest('.g-rs'); if (!h) return;
+  e.preventDefault();
+  const g = $('.gantt'), lw0 = parseFloat(getComputedStyle(g).getPropertyValue('--lw')) || ganttLw();
+  let need = 160;
+  $$('.g-label .nm', g).forEach(nm => { need = Math.max(need, lw0 - nm.clientWidth + nm.scrollWidth + 6); });
+  setGanttLw(Math.min(need, Math.max(320, innerWidth - 320)), true); // deixa sempre um pedaço do cronograma à vista
+});
+document.addEventListener('keydown', e => {
+  if (!e.target.classList || !e.target.classList.contains('g-rs')) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setGanttLw(ganttLw() + (e.key === 'ArrowRight' ? 20 : -20), true); setTimeout(() => { const h = $('.g-rs'); if (h) h.focus(); }, 30); }
+});

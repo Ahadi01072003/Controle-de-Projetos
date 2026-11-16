@@ -576,8 +576,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;min-width:1040px}
 .tbl tr.row:hover{background:var(--surface-2)}
 .tbl tr.row.dim{opacity:.6}
 .tbl .code{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
-.tbl .ttl{font-weight:600;max-width:300px}
-.tbl .ttl div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl .ttl{font-weight:600;max-width:340px;min-width:200px}
+.tbl .ttl div{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .dcell{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
 .dcell .d{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
 .dcell .o{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center}
@@ -617,7 +617,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;min-width:1040px}
 .g-today{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--accent);z-index:3}
 .g-today span{position:sticky;top:56px;display:inline-block;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:4px;white-space:nowrap}
 .g-row{display:flex;height:44px;border-bottom:1px solid var(--line);position:relative}
-.g-row:hover .g-label,.g-row:hover .g-track{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.g-row:hover .g-track{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.g-row:hover .g-label{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface))}
 .g-label{position:sticky;left:0;z-index:4;width:var(--lw);flex:none;background:var(--surface);border-right:1px solid var(--line);padding:0 12px 0 14px;display:flex;align-items:center;gap:9px;cursor:pointer;min-width:0}
 .g-label .code{font-family:var(--f-mono);font-size:11px;color:var(--muted);flex:none}
 .g-label .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550;font-size:13px;flex:1;min-width:0}
@@ -911,7 +912,7 @@ fieldset.box legend{padding:0 6px;font-size:12px;font-weight:700;letter-spacing:
 .ilist .t.t2{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;margin-bottom:4px}
 .ilist li.att .when{padding-top:2px}
 .c-list{display:flex;flex-direction:column}
-.mini-m{flex:1;justify-content:space-around}
+.mini-m{flex:1;justify-content:flex-start}
 .fin-pc{grid-column:span 12}
 .fin-pc .card-h h2,.bk-card .card-h h2{display:inline-flex;gap:8px;align-items:center}
 .fin-pc .card-h a{display:inline-flex;gap:4px;align-items:center;text-decoration:none;color:var(--accent);font-weight:600}
@@ -956,7 +957,7 @@ fieldset.box legend{padding:0 6px;font-size:12px;font-weight:700;letter-spacing:
 .rp-gh{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;padding:6px 0 2px;border-bottom:1px dashed var(--line)}
 .pd-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
 .pd-top p{margin:0;font-size:12.5px;max-width:70ch}
-.chipb .ic{width:14px;height:14px}
+.chipb .ic{width:14px;height:14px;vertical-align:-2px;margin-right:5px}
 .pd-list{display:flex;flex-direction:column}
 .pd-row{display:grid;grid-template-columns:34px minmax(150px,1.1fr) minmax(120px,2fr) 52px 70px;grid-template-areas:"rk who bar pct n" "rk ps ps ps ps";gap:6px 12px;align-items:center;padding:11px 6px;border-top:1px solid var(--line);cursor:pointer;border-radius:8px;transition:background .15s}
 .pd-row:first-child{border-top:0}
@@ -1062,7 +1063,6 @@ fieldset.box legend{padding:0 6px;font-size:12px;font-weight:700;letter-spacing:
   .fin-k .kpi:nth-child(3n){border-right:1px solid var(--line)}
   .fin-k .kpi:nth-child(2n){border-right:0}
   .help-st li{grid-template-columns:1fr}
-  .gantt{--lw:132px}
 }
 @media (max-width:760px){
   table.tbl.cardify{min-width:0}
@@ -1179,7 +1179,21 @@ table.tbl.mdtbl{min-width:0;width:100%;table-layout:fixed}
 .more-d[open] > summary::before{transform:rotate(45deg)}
 .more-d > summary:hover{background:var(--surface-2)}
 .more-d > summary .muted{font-weight:400;font-size:12.5px}
-.more-b{display:flex;flex-direction:column;gap:14px;padding:4px 14px 14px;animation:fade .2s ease}
+.more-bd{display:flex;flex-direction:column;gap:14px;padding:4px 14px 14px;animation:fade .2s ease}
+
+/* cronograma: alça para ajustar a coluna de nomes e cabeçalho dos meses */
+.g-corner{position:sticky;overflow:visible}
+.g-rs{position:absolute;top:0;right:-5px;width:10px;height:100%;cursor:col-resize;z-index:9;touch-action:none}
+.g-rs::after{content:"";position:absolute;top:8px;bottom:8px;left:4px;width:2px;border-radius:2px;background:transparent;transition:background .15s}
+.g-rs:hover::after,.gantt.resizing .g-rs::after{background:var(--accent)}
+.gantt.resizing .g-label{border-right-color:var(--accent);box-shadow:1px 0 0 var(--accent)}
+.gantt.resizing{user-select:none}
+body.col-resizing,body.col-resizing *{cursor:col-resize!important}
+.g-scale .m{font-weight:650;font-size:11.5px;letter-spacing:.01em;color:var(--ink);padding:6px 8px 0;overflow:clip}
+.g-scale .m span{position:sticky;left:calc(var(--lw) + 8px);display:inline-block}
+.g-scale .m:first-child{border-left:0}
+.g-label{box-shadow:4px 0 8px -6px rgba(19,23,34,.12)}
+.g-wrap{scrollbar-gutter:stable}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -1973,10 +1987,11 @@ function vCronograma() {
   if (!L.length) return toolbar + `<div class="card empty"><h3>Sem atividades neste projeto</h3></div>`;
   let lo = Infinity, hi = -Infinity;
   L.forEach(x => { lo = Math.min(lo, x.c.io, x.c.ip, x.c.ir ?? Infinity); hi = Math.max(hi, x.c.fo, x.c.fp, x.c.fr ?? -Infinity); });
-  lo = Math.min(lo, T) - 3; hi = Math.max(hi, T) + 12;
+  lo = Math.min(lo, T) - 3; hi = Math.max(hi, T) + Math.max(12, Math.ceil(120 / { semana: 30, mes: 13, tri: 4.5 }[S.zoom]));
   while (wd(lo) !== 1) lo--;
-  const px = { semana: 30, mes: 13, tri: 4.5 }[S.zoom];
-  const days = hi - lo + 1, W = Math.ceil(days * px);
+  const lw = ganttLw(), days = hi - lo + 1, avail = S.gAvail || ganttAvailGuess(), px0 = { semana: 30, mes: 13, tri: 4.5 }[S.zoom];
+  // nunca sobra área em branco depois do fim: se o período couber na tela, a escala estica até preencher
+  const px = Math.max(px0, Math.floor((avail - lw) / days * 100) / 100), W = Math.round(days * px);
   const X = n => (n - lo) * px, Wd = (a, b) => Math.max(px * 0.6, (b - a + 1) * px);
   // escala
   let months = '', ticks = '', lines = '';
@@ -1984,14 +1999,14 @@ function vCronograma() {
     const dt = Dt(d);
     if (dt.getUTCDate() === 1 || d === lo) {
       let e = d; while (e <= hi && (e === d || Dt(e).getUTCDate() !== 1)) e++;
-      months += `<div class="m" style="left:${X(d)}px;width:${(e - d) * px}px">${MESL[dt.getUTCMonth()]}${dt.getUTCMonth() === 0 || d === lo ? ' ' + dt.getUTCFullYear() : ''}</div>`;
+      months += `<div class="m" style="left:${X(d)}px;width:${(e - d) * px}px" data-tip="${MESL[dt.getUTCMonth()]} de ${dt.getUTCFullYear()}">${monthLabel(dt, (e - d) * px)}</div>`;
       if (dt.getUTCDate() === 1) lines += `<div class="v mo" style="left:${X(d)}px"></div>`;
     }
     if (S.zoom === 'semana') {
       ticks += `<div class="t ${isWd(d) ? '' : 'we'}" style="left:${X(d)}px;width:${px}px">${dt.getUTCDate()}<br>${DOW[wd(d)]}</div>`;
-      if (wd(d) === 6) lines += `<div class="we" style="left:${X(d)}px;width:${px * 2}px"></div>`;
+      if (wd(d) === 6) lines += `<div class="we" style="left:${X(d)}px;width:${px * Math.min(2, hi - d + 1)}px"></div>`;
     } else if (wd(d) === 1) {
-      if (S.zoom === 'mes') ticks += `<div class="t" style="left:${X(d)}px;width:${px * 7}px">${fds(d)}</div>`;
+      if (S.zoom === 'mes') ticks += `<div class="t" style="left:${X(d)}px;width:${px * Math.min(7, hi - d + 1)}px">${fds(d)}</div>`;
       lines += `<div class="v" style="left:${X(d)}px"></div>`;
     }
   }
@@ -2014,7 +2029,7 @@ ${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.
       const tip = `${esc(x.a.codigo || '')} · ${esc(x.a.titulo)}\nPlano atual: ${fds(c.ip)} → ${fds(c.fp)}${c.replan ? `\nOriginal: ${fds(c.io)} → ${fds(c.fo)} (fim ${fdelta(c.dFim)})` : ''}${c.ir != null ? `\nReal: ${fds(c.ir)} → ${c.fr != null ? fds(c.fr) : 'em curso'}` : ''}\n${ST[c.status].l}`;
       const tagX = Math.max(X(c.fp) + Wd(c.fp, c.fp), c.replan ? X(c.fo) + Wd(c.fo, c.fo) : 0, c.fr != null ? X(c.fr) + px : 0);
       const realEnd = c.fr ?? Math.max(c.ir ?? T, T);
-      rowsHTML += `<div class="g-row"><div class="g-label" data-act="open-act" data-id="${x.a.id}" tabindex="0">${subToggle(x)}<span class="code">${esc(x.a.codigo || '')}</span><i class="dot" style="--c:${col}" data-tip="${ST[c.status].l}"></i><span class="nm">${esc(x.a.titulo)}</span>${c.subs ? subCount(x) : ''}${avatar(x.p, 'sm')}</div>
+      rowsHTML += `<div class="g-row"><div class="g-label" data-act="open-act" data-id="${x.a.id}" tabindex="0">${subToggle(x)}<span class="code">${esc(x.a.codigo || '')}</span><i class="dot" style="--c:${col}" data-tip="${ST[c.status].l}"></i><span class="nm" data-tip="${esc(x.a.titulo)}">${esc(x.a.titulo)}</span>${c.subs ? subCount(x) : ''}${avatar(x.p, 'sm')}</div>
         <div class="g-track" style="width:${W}px">
           <div class="g-orig" style="left:${X(c.io)}px;width:${Wd(c.io, c.fo)}px"></div>
           <div class="g-plan grow" style="--i:${i};left:${X(c.ip)}px;width:${Wd(c.ip, c.fp)}px;${c.canc ? 'opacity:.4' : ''}" data-act="open-act" data-id="${x.a.id}" data-tip="${tip}">${c.subs ? `<i class="gp-fill" style="width:${Math.round(c.prog || 0)}%"></i>` : ''}</div>
@@ -2022,7 +2037,7 @@ ${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.
           <div class="g-tag" style="left:${tagX + 2}px">${c.replan ? revMark(c.nRep) + dlt(c.dFim, false) : ''}${c.status === 'atrasada' ? `<span class="dl up">${fdelta(dd(c.fp, T))} atraso</span>` : ''}</div>
         </div></div>`;
       if (c.subs && S.open.has(x.a.id)) subsOf(x.a).forEach((sb, k) => { const sc = c.subs[k], sp = pessoaById(sb.respId) || x.p, scol = stColor(sc.status), sEnd = sc.fr ?? Math.max(sc.ir ?? T, T);
-        rowsHTML += `<div class="g-row g-sub"><div class="g-label" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" tabindex="0">${etBadge(k + 1)}<i class="dot" style="--c:${scol}" data-tip="${ST[sc.status].l}"></i><span class="nm">${esc(sb.nome)}</span>${avatar(sp, 'sm')}</div>
+        rowsHTML += `<div class="g-row g-sub"><div class="g-label" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" tabindex="0">${etBadge(k + 1)}<i class="dot" style="--c:${scol}" data-tip="${ST[sc.status].l}"></i><span class="nm" data-tip="${esc(sb.nome)}">${esc(sb.nome)}</span>${avatar(sp, 'sm')}</div>
           <div class="g-track" style="width:${W}px"><div class="g-orig" style="left:${X(sc.io)}px;width:${Wd(sc.io, sc.fo)}px"></div>
           <div class="g-plan" style="left:${X(sc.ip)}px;width:${Wd(sc.ip, sc.fp)}px" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" data-tip="E${k + 1} · ${esc(sb.nome)}
 Plano: ${fds(sc.ip)} → ${fds(sc.fp)}${sc.replan ? `
@@ -2033,15 +2048,19 @@ ${ST[sc.status].l} · ${Math.round(sc.prog || 0)}%"></div>
           <div class="g-tag" style="left:${Math.max(X(sc.fp) + Wd(sc.fp, sc.fp), X(sc.fo) + Wd(sc.fo, sc.fo)) + 2}px">${sc.replan ? revMark(sc.nRep) + dlt(sc.dFim, false) : ''}</div></div></div>`; });
     });
   });
-  return toolbar + `<div class="g-wrap rise" style="--i:1" data-scroll="gantt" id="gwrap"><div class="gantt" style="width:calc(var(--lw) + ${W}px)">
-    <div class="g-head"><div class="g-corner">Atividade</div><div class="g-scale" style="width:${W}px">${months}${ticks}</div></div>
+  return toolbar + `<div class="g-wrap rise" style="--i:1" data-scroll="gantt" id="gwrap"><div class="gantt" style="--lw:${lw}px;width:${lw + W}px" data-w="${W}" data-str="${px > px0 ? 1 : 0}">
+    <div class="g-head"><div class="g-corner">Atividade<span class="g-rs" role="separator" aria-orientation="vertical" aria-label="Largura da coluna de atividades" data-tip="Arraste para ajustar a largura · clique duplo ajusta ao maior nome"></span></div><div class="g-scale" style="width:${W}px">${months}${ticks}</div></div>
     <div class="g-body"><div class="g-lines" style="width:${W}px">${lines}<div class="g-today" style="left:${X(T) + px / 2}px"><span>Hoje</span></div></div>${rowsHTML}</div></div></div>`;
 }
 function afterGantt(host) {
-  const w = $('#gwrap', host); if (!w || S.ganttScrolled) return;
+  const w = $('#gwrap', host); if (!w) return;
+  // mede a largura real disponível; se a estimativa errou (sobrou branco ou passou do limite), redesenha uma vez
+  const g = $('.gantt', w), a = w.clientWidth;
+  if (g && a && Math.abs(a - (S.gAvail || 0)) > 1) { const prev = S.gAvail; S.gAvail = a; if (g.offsetWidth < a - 1 || (g.dataset.str === '1' && g.offsetWidth > a + 1)) { if (prev !== a) return render(); } }
+  if (S.ganttScrolled) return;
   S.ganttScrolled = true;
   const t = $('.g-today', w); if (!t) return;
-  const lw = parseFloat(getComputedStyle($('.gantt', w)).getPropertyValue('--lw')) || 270;
+  const lw = ganttLw();
   w.scrollLeft = Math.max(0, parseFloat(t.style.left) + lw - (w.clientWidth - lw) * 0.35 - lw);
 }
 
@@ -2724,7 +2743,7 @@ function openAct(id, preset = {}) {
       </fieldset>
       ${a && c.subs ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
       <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${disx} maxlength="2000" ${mode === 'exec' ? 'placeholder="Anote aqui o que for importante sobre esta atividade"' : ''}>${esc(d.obs || '')}</textarea></div>
-      <details class="more-d" id="a-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span>${moreBits.length ? `<span class="muted">${moreBits.join(' · ')}</span>` : ''}</summary><div class="more-b">
+      <details class="more-d" id="a-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span>${moreBits.length ? `<span class="muted">${moreBits.join(' · ')}</span>` : ''}</summary><div class="more-bd">
         ${ind}
         <div class="fgrid">
           ${a ? `<div class="f"><label for="a-meta">Projeto</label><select class="sel" id="a-meta" ${dis}><option value="">Sem projeto</option>${metaOptions(d.metaId, false)}</select></div>` : ''}
@@ -4155,6 +4174,46 @@ function earlyTag(c, long = false) {
   return `<span class="dl dn early" data-tip="Início real ${fd(c.ir)} · plano atual ${fd(c.ip)}">${long ? 'Começou ' : 'começou '}${n} ${U()} antes</span>`;
 }
 
+/* ---------- cronograma: coluna de nomes ajustável (como no Excel) e rótulos dos meses ---------- */
+const GLW_KEY = 'controle-projetos.glw';
+try { const v = +localStorage.getItem(GLW_KEY); if (v) S.gLw = v; } catch (e) {}
+function ganttLw() { const def = innerWidth <= 600 ? 132 : innerWidth <= 900 ? 170 : 270; return Math.max(110, Math.min(S.gLw || def, Math.max(160, innerWidth - 160))); }
+function ganttAvailGuess() { const v = $('#view'); if (!v) return innerWidth - 40; const cs = getComputedStyle(v); return v.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2; }
+addEventListener('resize', () => { S.gAvail = 0; });
+function monthLabel(dt, w) {
+  const m = dt.getUTCMonth(), y = dt.getUTCFullYear(), nome = MESL[m].charAt(0).toUpperCase() + MESL[m].slice(1), cur = MES[m].charAt(0).toUpperCase() + MES[m].slice(1);
+  // um só padrão: "Novembro 2026"; se o mês não couber inteiro, "Nov 2026"; mês muito curto na ponta fica sem rótulo
+  const full = `${nome} ${y}`, mid = `${cur} ${y}`;
+  const t = w >= full.length * 7.4 + 18 ? full : w >= mid.length * 7.4 + 16 ? mid : ''; return t ? `<span>${t}</span>` : '';
+}
+function setGanttLw(lw, save) {
+  const g = $('.gantt'); if (!g) return;
+  lw = Math.round(Math.max(110, Math.min(lw, innerWidth - 160)));
+  g.style.setProperty('--lw', lw + 'px'); g.style.width = (lw + (+g.dataset.w || 0)) + 'px';
+  if (save) { S.gLw = lw; S.gAvail = 0; try { localStorage.setItem(GLW_KEY, String(lw)); } catch (e) {} render(); }
+}
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest && e.target.closest('.g-rs'); if (!h) return;
+  e.preventDefault(); e.stopPropagation();
+  const g = $('.gantt'), x0 = e.clientX, lw0 = parseFloat(getComputedStyle(g).getPropertyValue('--lw')) || ganttLw();
+  g.classList.add('resizing'); document.body.classList.add('col-resizing'); hideTip();
+  const mv = ev => setGanttLw(lw0 + ev.clientX - x0, false);
+  const up = ev => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); g.classList.remove('resizing'); document.body.classList.remove('col-resizing'); if (Math.abs(ev.clientX - x0) > 1) setGanttLw(lw0 + ev.clientX - x0, true); };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up);
+});
+document.addEventListener('dblclick', e => {
+  const h = e.target.closest && e.target.closest('.g-rs'); if (!h) return;
+  e.preventDefault();
+  const g = $('.gantt'), lw0 = parseFloat(getComputedStyle(g).getPropertyValue('--lw')) || ganttLw();
+  let need = 160;
+  $$('.g-label .nm', g).forEach(nm => { need = Math.max(need, lw0 - nm.clientWidth + nm.scrollWidth + 6); });
+  setGanttLw(Math.min(need, Math.max(320, innerWidth - 320)), true); // deixa sempre um pedaço do cronograma à vista
+});
+document.addEventListener('keydown', e => {
+  if (!e.target.classList || !e.target.classList.contains('g-rs')) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setGanttLw(ganttLw() + (e.key === 'ArrowRight' ? 20 : -20), true); setTimeout(() => { const h = $('.g-rs'); if (h) h.focus(); }, 30); }
+});
+
 /* ===================== FINANCEIRO ===================== */
 /* Valor ajustado = contrato + aditivos − faturamento direto (compras feitas direto pelo cliente, que abatem da obra).
    A pagar = ajustado − pagamentos. Lançamentos ficam em tabelas próprias, com histórico gravado pelo banco.
@@ -4793,7 +4852,7 @@ function openEtapa(aid, sid) {
         ${daily ? `<div class="planhint">${ic('cal')}<span>O avanço vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>`
           : `<div class="f"><label for="et-prog">Avanço da etapa (%)</label><div class="range"><input type="range" id="et-prog" min="0" max="100" step="5" value="${s.progresso != null ? s.progresso : 0}" ${disx}><output id="et-progout">${s.progresso != null ? s.progresso : 0}%</output></div></div>`}
       </fieldset>
-      <details class="more-d" id="et-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span><span class="muted">${[`responsável ${esc(resp ? resp.nome : '—')}`, `peso ${+s.peso || 1}`, reps.length ? `${reps.length} ${reps.length === 1 ? 'replanejamento' : 'replanejamentos'}` : '', fin ? 'financeiro' : '', daily ? 'diário' : ''].filter(Boolean).join(' · ')}</span></summary><div class="more-b">
+      <details class="more-d" id="et-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span><span class="muted">${[`responsável ${esc(resp ? resp.nome : '—')}`, `peso ${+s.peso || 1}`, reps.length ? `${reps.length} ${reps.length === 1 ? 'replanejamento' : 'replanejamentos'}` : '', fin ? 'financeiro' : '', daily ? 'diário' : ''].filter(Boolean).join(' · ')}</span></summary><div class="more-bd">
         ${ind}
         <div class="fgrid">
           <div class="f full"><label for="et-nome">Nome da etapa</label><input class="inp" id="et-nome" value="${esc(s.nome)}" maxlength="120" ${dis}></div>
@@ -4982,7 +5041,7 @@ document.addEventListener('change', e => {
   else if (id === 'g-meta') { S.gMeta = e.target.value; S.ganttScrolled = false; render(); }
 });
 let rzT = 0;
-addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel' || S.view === 'financeiro') render(); }, 160); });
+addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel' || S.view === 'financeiro' || S.view === 'cronograma') render(); }, 160); });
 
 const tipEl = $('#tip');
 function showTip(x, y, html) {

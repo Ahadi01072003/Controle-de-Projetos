@@ -215,6 +215,36 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     await ctx2.close();
   }
 
+  // 5c. cronograma: coluna de nomes ajustável, sem área em branco, meses padronizados
+  {
+    const g = await open(); await login(g, 'gestor@teste.com');
+    const pids = await g.evaluate(() => S.metas.map(m => m.id));
+    let blank = 0, bad = [];
+    for (const pid of pids) for (const z of ['semana', 'mes', 'tri']) {
+      await g.evaluate(([pid, z]) => { S.zoom = z; location.hash = 'cronograma--' + pid; render(); }, [pid, z]); await g.waitForTimeout(500);
+      const r = await g.evaluate(() => { const w = document.querySelector('#gwrap'), gt = document.querySelector('.gantt'); return w ? { a: w.clientWidth, g: gt.offsetWidth, sw: w.scrollWidth, ms: [...document.querySelectorAll('.g-scale .m')].map(m => m.textContent) } : null; });
+      if (!r) continue;
+      if (r.g < r.a - 1 || r.sw > Math.max(r.g, r.a) + 1) blank++;
+      bad.push(...r.ms.filter(t => t && !/^[A-ZÇ][a-zç]+ \d{4}$/.test(t)));
+    }
+    ok(blank === 0, 'cronograma ocupa a largura toda e termina no fim (sem caixa em branco), em todas as escalas');
+    ok(!bad.length, `meses sempre no mesmo padrão "Mês AAAA"${bad.length ? ' — fora: ' + bad.slice(0, 3).join(', ') : ''}`);
+    await g.evaluate(pid => { S.zoom = 'mes'; location.hash = 'cronograma--' + pid; render(); }, FUP); await g.waitForTimeout(600);
+    const lw0 = await g.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.gantt')).getPropertyValue('--lw')));
+    const hb = await (await g.$('.g-rs')).boundingBox();
+    await g.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2); await g.mouse.down(); await g.mouse.move(hb.x + 125, hb.y + 10, { steps: 6 }); await g.mouse.up(); await g.waitForTimeout(500);
+    const lw1 = await g.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.gantt')).getPropertyValue('--lw')));
+    ok(Math.abs(lw1 - lw0 - 120) < 6, `arrastar a divisória alarga a coluna de nomes (${lw0} → ${lw1}px)`);
+    ok(+(await g.evaluate(() => localStorage.getItem('controle-projetos.glw'))) === lw1, 'largura escolhida fica guardada');
+    const trunc0 = await g.$$eval('.g-label .nm', es => es.filter(e => e.scrollWidth > e.clientWidth + 1).length);
+    await g.dblclick('.g-rs'); await g.waitForTimeout(600);
+    const trunc1 = await g.$$eval('.g-label .nm', es => es.filter(e => e.scrollWidth > e.clientWidth + 1).length);
+    ok(trunc0 > 0 && trunc1 === 0, `clique duplo ajusta ao maior nome (${trunc0} cortados → ${trunc1})`);
+    const r2 = await g.evaluate(() => { const w = document.querySelector('#gwrap'), gt = document.querySelector('.gantt'); return { a: w.clientWidth, g: gt.offsetWidth }; });
+    ok(r2.g >= r2.a - 1, 'mesmo com a coluna larga, nada em branco no fim');
+    await g.close();
+  }
+
   // 6. celular: barra de baixo e "Mais" com sair
   p = await open(390, 844); await login(p, 'admin@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$eval('#mnav', e => getComputedStyle(e).display !== 'none' && e.querySelectorAll('a').length >= 4), 'barra de navegação embaixo no celular');

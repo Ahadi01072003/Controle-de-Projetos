@@ -518,8 +518,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;min-width:1040px}
 .tbl tr.row:hover{background:var(--surface-2)}
 .tbl tr.row.dim{opacity:.6}
 .tbl .code{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
-.tbl .ttl{font-weight:600;max-width:300px}
-.tbl .ttl div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl .ttl{font-weight:600;max-width:340px;min-width:200px}
+.tbl .ttl div{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .dcell{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
 .dcell .d{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
 .dcell .o{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center}
@@ -559,7 +559,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;min-width:1040px}
 .g-today{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--accent);z-index:3}
 .g-today span{position:sticky;top:56px;display:inline-block;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:4px;white-space:nowrap}
 .g-row{display:flex;height:44px;border-bottom:1px solid var(--line);position:relative}
-.g-row:hover .g-label,.g-row:hover .g-track{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.g-row:hover .g-track{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.g-row:hover .g-label{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface))}
 .g-label{position:sticky;left:0;z-index:4;width:var(--lw);flex:none;background:var(--surface);border-right:1px solid var(--line);padding:0 12px 0 14px;display:flex;align-items:center;gap:9px;cursor:pointer;min-width:0}
 .g-label .code{font-family:var(--f-mono);font-size:11px;color:var(--muted);flex:none}
 .g-label .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550;font-size:13px;flex:1;min-width:0}
@@ -1573,10 +1574,11 @@ function vCronograma() {
   if (!L.length) return toolbar + `<div class="card empty"><h3>Sem atividades neste projeto</h3></div>`;
   let lo = Infinity, hi = -Infinity;
   L.forEach(x => { lo = Math.min(lo, x.c.io, x.c.ip, x.c.ir ?? Infinity); hi = Math.max(hi, x.c.fo, x.c.fp, x.c.fr ?? -Infinity); });
-  lo = Math.min(lo, T) - 3; hi = Math.max(hi, T) + 12;
+  lo = Math.min(lo, T) - 3; hi = Math.max(hi, T) + Math.max(12, Math.ceil(120 / { semana: 30, mes: 13, tri: 4.5 }[S.zoom]));
   while (wd(lo) !== 1) lo--;
-  const px = { semana: 30, mes: 13, tri: 4.5 }[S.zoom];
-  const days = hi - lo + 1, W = Math.ceil(days * px);
+  const lw = ganttLw(), days = hi - lo + 1, avail = S.gAvail || ganttAvailGuess(), px0 = { semana: 30, mes: 13, tri: 4.5 }[S.zoom];
+  // nunca sobra área em branco depois do fim: se o período couber na tela, a escala estica até preencher
+  const px = Math.max(px0, Math.floor((avail - lw) / days * 100) / 100), W = Math.round(days * px);
   const X = n => (n - lo) * px, Wd = (a, b) => Math.max(px * 0.6, (b - a + 1) * px);
   // escala
   let months = '', ticks = '', lines = '';
@@ -1584,14 +1586,14 @@ function vCronograma() {
     const dt = Dt(d);
     if (dt.getUTCDate() === 1 || d === lo) {
       let e = d; while (e <= hi && (e === d || Dt(e).getUTCDate() !== 1)) e++;
-      months += `<div class="m" style="left:${X(d)}px;width:${(e - d) * px}px">${MESL[dt.getUTCMonth()]}${dt.getUTCMonth() === 0 || d === lo ? ' ' + dt.getUTCFullYear() : ''}</div>`;
+      months += `<div class="m" style="left:${X(d)}px;width:${(e - d) * px}px" data-tip="${MESL[dt.getUTCMonth()]} de ${dt.getUTCFullYear()}">${monthLabel(dt, (e - d) * px)}</div>`;
       if (dt.getUTCDate() === 1) lines += `<div class="v mo" style="left:${X(d)}px"></div>`;
     }
     if (S.zoom === 'semana') {
       ticks += `<div class="t ${isWd(d) ? '' : 'we'}" style="left:${X(d)}px;width:${px}px">${dt.getUTCDate()}<br>${DOW[wd(d)]}</div>`;
-      if (wd(d) === 6) lines += `<div class="we" style="left:${X(d)}px;width:${px * 2}px"></div>`;
+      if (wd(d) === 6) lines += `<div class="we" style="left:${X(d)}px;width:${px * Math.min(2, hi - d + 1)}px"></div>`;
     } else if (wd(d) === 1) {
-      if (S.zoom === 'mes') ticks += `<div class="t" style="left:${X(d)}px;width:${px * 7}px">${fds(d)}</div>`;
+      if (S.zoom === 'mes') ticks += `<div class="t" style="left:${X(d)}px;width:${px * Math.min(7, hi - d + 1)}px">${fds(d)}</div>`;
       lines += `<div class="v" style="left:${X(d)}px"></div>`;
     }
   }
@@ -1614,7 +1616,7 @@ ${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.
       const tip = `${esc(x.a.codigo || '')} · ${esc(x.a.titulo)}\nPlano atual: ${fds(c.ip)} → ${fds(c.fp)}${c.replan ? `\nOriginal: ${fds(c.io)} → ${fds(c.fo)} (fim ${fdelta(c.dFim)})` : ''}${c.ir != null ? `\nReal: ${fds(c.ir)} → ${c.fr != null ? fds(c.fr) : 'em curso'}` : ''}\n${ST[c.status].l}`;
       const tagX = Math.max(X(c.fp) + Wd(c.fp, c.fp), c.replan ? X(c.fo) + Wd(c.fo, c.fo) : 0, c.fr != null ? X(c.fr) + px : 0);
       const realEnd = c.fr ?? Math.max(c.ir ?? T, T);
-      rowsHTML += `<div class="g-row"><div class="g-label" data-act="open-act" data-id="${x.a.id}" tabindex="0">${subToggle(x)}<span class="code">${esc(x.a.codigo || '')}</span><i class="dot" style="--c:${col}" data-tip="${ST[c.status].l}"></i><span class="nm">${esc(x.a.titulo)}</span>${c.subs ? subCount(x) : ''}${avatar(x.p, 'sm')}</div>
+      rowsHTML += `<div class="g-row"><div class="g-label" data-act="open-act" data-id="${x.a.id}" tabindex="0">${subToggle(x)}<span class="code">${esc(x.a.codigo || '')}</span><i class="dot" style="--c:${col}" data-tip="${ST[c.status].l}"></i><span class="nm" data-tip="${esc(x.a.titulo)}">${esc(x.a.titulo)}</span>${c.subs ? subCount(x) : ''}${avatar(x.p, 'sm')}</div>
         <div class="g-track" style="width:${W}px">
           <div class="g-orig" style="left:${X(c.io)}px;width:${Wd(c.io, c.fo)}px"></div>
           <div class="g-plan grow" style="--i:${i};left:${X(c.ip)}px;width:${Wd(c.ip, c.fp)}px;${c.canc ? 'opacity:.4' : ''}" data-act="open-act" data-id="${x.a.id}" data-tip="${tip}">${c.subs ? `<i class="gp-fill" style="width:${Math.round(c.prog || 0)}%"></i>` : ''}</div>
@@ -1622,7 +1624,7 @@ ${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.
           <div class="g-tag" style="left:${tagX + 2}px">${c.replan ? revMark(c.nRep) + dlt(c.dFim, false) : ''}${c.status === 'atrasada' ? `<span class="dl up">${fdelta(dd(c.fp, T))} atraso</span>` : ''}</div>
         </div></div>`;
       if (c.subs && S.open.has(x.a.id)) subsOf(x.a).forEach((sb, k) => { const sc = c.subs[k], sp = pessoaById(sb.respId) || x.p, scol = stColor(sc.status), sEnd = sc.fr ?? Math.max(sc.ir ?? T, T);
-        rowsHTML += `<div class="g-row g-sub"><div class="g-label" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" tabindex="0">${etBadge(k + 1)}<i class="dot" style="--c:${scol}" data-tip="${ST[sc.status].l}"></i><span class="nm">${esc(sb.nome)}</span>${avatar(sp, 'sm')}</div>
+        rowsHTML += `<div class="g-row g-sub"><div class="g-label" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" tabindex="0">${etBadge(k + 1)}<i class="dot" style="--c:${scol}" data-tip="${ST[sc.status].l}"></i><span class="nm" data-tip="${esc(sb.nome)}">${esc(sb.nome)}</span>${avatar(sp, 'sm')}</div>
           <div class="g-track" style="width:${W}px"><div class="g-orig" style="left:${X(sc.io)}px;width:${Wd(sc.io, sc.fo)}px"></div>
           <div class="g-plan" style="left:${X(sc.ip)}px;width:${Wd(sc.ip, sc.fp)}px" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" data-tip="E${k + 1} · ${esc(sb.nome)}
 Plano: ${fds(sc.ip)} → ${fds(sc.fp)}${sc.replan ? `
@@ -1633,15 +1635,19 @@ ${ST[sc.status].l} · ${Math.round(sc.prog || 0)}%"></div>
           <div class="g-tag" style="left:${Math.max(X(sc.fp) + Wd(sc.fp, sc.fp), X(sc.fo) + Wd(sc.fo, sc.fo)) + 2}px">${sc.replan ? revMark(sc.nRep) + dlt(sc.dFim, false) : ''}</div></div></div>`; });
     });
   });
-  return toolbar + `<div class="g-wrap rise" style="--i:1" data-scroll="gantt" id="gwrap"><div class="gantt" style="width:calc(var(--lw) + ${W}px)">
-    <div class="g-head"><div class="g-corner">Atividade</div><div class="g-scale" style="width:${W}px">${months}${ticks}</div></div>
+  return toolbar + `<div class="g-wrap rise" style="--i:1" data-scroll="gantt" id="gwrap"><div class="gantt" style="--lw:${lw}px;width:${lw + W}px" data-w="${W}" data-str="${px > px0 ? 1 : 0}">
+    <div class="g-head"><div class="g-corner">Atividade<span class="g-rs" role="separator" aria-orientation="vertical" aria-label="Largura da coluna de atividades" data-tip="Arraste para ajustar a largura · clique duplo ajusta ao maior nome"></span></div><div class="g-scale" style="width:${W}px">${months}${ticks}</div></div>
     <div class="g-body"><div class="g-lines" style="width:${W}px">${lines}<div class="g-today" style="left:${X(T) + px / 2}px"><span>Hoje</span></div></div>${rowsHTML}</div></div></div>`;
 }
 function afterGantt(host) {
-  const w = $('#gwrap', host); if (!w || S.ganttScrolled) return;
+  const w = $('#gwrap', host); if (!w) return;
+  // mede a largura real disponível; se a estimativa errou (sobrou branco ou passou do limite), redesenha uma vez
+  const g = $('.gantt', w), a = w.clientWidth;
+  if (g && a && Math.abs(a - (S.gAvail || 0)) > 1) { const prev = S.gAvail; S.gAvail = a; if (g.offsetWidth < a - 1 || (g.dataset.str === '1' && g.offsetWidth > a + 1)) { if (prev !== a) return render(); } }
+  if (S.ganttScrolled) return;
   S.ganttScrolled = true;
   const t = $('.g-today', w); if (!t) return;
-  const lw = parseFloat(getComputedStyle($('.gantt', w)).getPropertyValue('--lw')) || 270;
+  const lw = ganttLw();
   w.scrollLeft = Math.max(0, parseFloat(t.style.left) + lw - (w.clientWidth - lw) * 0.35 - lw);
 }
 
@@ -2336,7 +2342,7 @@ function openAct(id, preset = {}) {
       </fieldset>
       ${a && c.subs ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
       <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${dis} maxlength="2000">${esc(d.obs || '')}</textarea></div>
-      <details class="more-d" id="a-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span>${moreBits.length ? `<span class="muted">${moreBits.join(' · ')}</span>` : ''}</summary><div class="more-b">
+      <details class="more-d" id="a-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span>${moreBits.length ? `<span class="muted">${moreBits.join(' · ')}</span>` : ''}</summary><div class="more-bd">
         ${ind}
         <div class="fgrid">
           ${a ? `<div class="f"><label for="a-meta">Projeto</label><select class="sel" id="a-meta" ${dis}><option value="">Sem projeto</option>${metaOptions(d.metaId, false)}</select></div>` : ''}
@@ -3070,7 +3076,7 @@ document.addEventListener('change', e => {
   else if (id === 'g-meta') { S.gMeta = e.target.value; S.ganttScrolled = false; render(); }
 });
 let rzT = 0;
-addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel' || S.view === 'financeiro') render(); }, 160); });
+addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { const n = innerWidth < 760; const ch = n !== S.narrow; S.narrow = n; if (ch || S.view === 'painel' || S.view === 'financeiro' || S.view === 'cronograma') render(); }, 160); });
 
 const tipEl = $('#tip');
 function showTip(x, y, html) {
