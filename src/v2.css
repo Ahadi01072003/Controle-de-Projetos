@@ -316,3 +316,16 @@ table.tbl.mdtbl{min-width:0;width:100%;table-layout:fixed}
 .corr-l li .ic{width:14px;height:14px;color:var(--muted);margin-top:2px}
 .corr-l li div{display:flex;flex-direction:column;gap:2px}
 .rp-tipo label{flex:1;justify-content:center}
+
+/* fichas enxutas: essencial à vista, resto em "Mais detalhes" */
+.planline{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:13px;color:var(--ink-2)}
+.planline span{display:inline-flex;gap:6px;align-items:center}
+.planline .ic{width:15px;height:15px;color:var(--muted)}
+.more-d{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.more-d > summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:11px 14px;font-weight:600;font-size:13.5px;border-radius:12px;transition:background .15s}
+.more-d > summary::-webkit-details-marker{display:none}
+.more-d > summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);margin-right:2px;transition:transform .2s;align-self:center}
+.more-d[open] > summary::before{transform:rotate(45deg)}
+.more-d > summary:hover{background:var(--surface-2)}
+.more-d > summary .muted{font-weight:400;font-size:12.5px}
+.more-b{display:flex;flex-direction:column;gap:14px;padding:4px 14px 14px;animation:fade .2s ease}

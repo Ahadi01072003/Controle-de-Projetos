@@ -2307,20 +2307,19 @@ function openAct(id, preset = {}) {
       if (r.fimDe !== r.fimPara) ch.push(`Fim ${fds(P(r.fimDe))} → ${fds(P(r.fimPara))} ${dlt(dd(P(r.fimDe), P(r.fimPara)))}`);
       return `<li><div class="mk">${revSvg(i + 1)}</div><div><div class="hd"><b>Revisão ${i + 1}</b><span class="when">${isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR')}${r.por && personName(r.por) ? ' · ' + esc(personName(r.por)) : ''}</span></div><div class="ch">${ch.join('<span>·</span>')}</div><div class="why"><span class="mot">${esc(MOTIVOS[r.motivo] || 'Outro')}</span>${esc(r.comentario || '')}</div>${canManage(a.metaId) ? `<button type="button" class="lnk rp-fix" data-act="rp-fix" data-id="${a.id}" data-i="${i}">Foi erro de cadastro? Reclassificar como correção</button>` : ''}</div></li>`;
     }).reverse().join('')}</ul>${corrList(a.correcoes)}</div>` : '';
+  // resumo do plano numa linha (os quadros de variação ficam em "Mais detalhes")
+  const planLine = c ? `<div class="planline"><span>${ic('cal')}Plano <b class="mono">${fds(c.ip)} → ${fds(c.fp)}</b></span><span class="muted">${!c.dIni && !c.dFim ? 'igual ao original' : `original ${fds(c.io)} → ${fds(c.fo)} ${dlt(c.dFim, false)}`}</span>${c.done ? `<span>Concluída ${fds(c.fr)} ${dlt(c.desvio, false)}</span>` : c.canc ? '' : `<span class="${c.rest < 0 ? 'neg' : ''}">${c.rest < 0 ? fdelta(-c.rest) + ' de atraso' : c.rest === 0 ? 'vence hoje' : 'faltam ' + c.rest + ' ' + U()}</span>`}</div>` : '';
+  const nRepC = a ? (a.replans || []).length : 0, moreBits = a ? [nRepC ? `${nRepC} ${nRepC === 1 ? 'replanejamento' : 'replanejamentos'}` : '', (a.apoioIds || []).length ? 'apoio' : '', a.manual ? (a.manual === 'pausada' ? 'pausada' : 'cancelada') : '', finVisible(a.metaId) ? 'financeiro' : '', c && c.di && !c.subs ? 'diário' : ''].filter(Boolean) : [];
   const html = `<form id="fa" novalidate style="display:contents">
     <div class="dr-h"><div class="r1">${a ? `<span class="mono muted">${esc(a.codigo || '')}</span>${revMark(c.nRep)}` : `<span class="eyebrow">Nova atividade</span>`}<span class="sp"></span>
       <button type="button" class="btn icon ghost" data-act="close-drawer" aria-label="Fechar">${ic('fechar')}</button></div>
-      ${a ? `<h2 id="drTitle" tabindex="-1">${esc(a.titulo)}</h2><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${chip(c.status, 'lg')}${earlyTag(c, true)}${c.replan && c.statusOrig !== c.status ? `<span class="muted" style="font-size:12.5px">Pela data original: <b style="color:var(--ink)">${ST[c.statusOrig].l}</b></span>` : ''}</div>` : `<h2 id="drTitle">Cadastrar atividade</h2>`}
+      ${a ? `<h2 id="drTitle" tabindex="-1">${esc(a.titulo)}</h2><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${chip(c.status, 'lg')}${earlyTag(c, true)}${c.replan && c.statusOrig !== c.status ? `<span class="muted" style="font-size:12.5px">Pela data original: <b style="color:var(--ink)">${ST[c.statusOrig].l}</b></span>` : ''}</div>${planLine}` : `<h2 id="drTitle">Cadastrar atividade</h2>`}
     </div>
     <div class="dr-b">
-      ${ind}
       <div class="fgrid">
         <div class="f full"><label for="a-titulo">Atividade <span class="req">*</span></label><input class="inp" id="a-titulo" value="${esc(d.titulo)}" ${dis} maxlength="160" placeholder="Ex.: Renegociar contrato com fornecedor"></div>
-        <div class="f"><label for="a-meta">Projeto</label><select class="sel" id="a-meta" ${dis}><option value="">Sem projeto</option>${metaOptions(d.metaId, false)}${ro ? '' : '<option value="__new">＋ Cadastrar novo projeto…</option>'}</select></div>
-        <div class="f"><label for="a-resp">Responsável</label><select class="sel" id="a-resp" ${dis}><option value="">Sem responsável</option>${pessoaOptions(d.respId, false)}${ro ? '' : '<option value="__new">＋ Cadastrar nova pessoa…</option>'}</select></div>
-        <div class="f full"><span class="lab">Apoio <span class="muted" style="font-weight:400">(opcional · recebem aviso, quem lança é o responsável)</span></span>${apoioPicker(d.apoioIds || [], d.respId, dis)}</div>
-        <div class="f"><span class="lab">Prioridade</span><div class="seg-ctl">${Object.entries(PRIO).map(([k, l]) => `<label><input type="radio" name="a-prio" value="${k}" ${d.prioridade === k ? 'checked' : ''} ${dis}>${l}</label>`).join('')}</div></div>
-        <div class="f"><label for="a-peso">Peso no projeto</label><select class="sel" id="a-peso" ${dis}>${[1, 2, 3, 4, 5].map(n => `<option value="${n}" ${+d.peso === n ? 'selected' : ''}>${n} ${n === 1 ? '(padrão)' : ''}</option>`).join('')}</select></div>
+        ${a ? '' : `<div class="f"><label for="a-meta">Projeto</label><select class="sel" id="a-meta" ${dis}><option value="">Sem projeto</option>${metaOptions(d.metaId, false)}${ro ? '' : '<option value="__new">＋ Cadastrar novo projeto…</option>'}</select></div>`}
+        <div class="f ${a ? 'full' : ''}"><label for="a-resp">Responsável</label><select class="sel" id="a-resp" ${dis}><option value="">Sem responsável</option>${pessoaOptions(d.respId, false)}${ro ? '' : '<option value="__new">＋ Cadastrar nova pessoa…</option>'}</select></div>
       </div>
       <fieldset class="box"><legend>Planejamento</legend>
         <div class="fgrid"><div class="f"><label for="a-ini">Início planejado <span class="req">*</span></label><input class="inp" type="date" id="a-ini" value="${esc(d.iniPlan)}" ${dis}></div>
@@ -2330,27 +2329,37 @@ function openAct(id, preset = {}) {
       <fieldset class="box"><legend>Execução</legend>
         <div class="fgrid"><div class="f"><label for="a-inir">Início real</label><div class="withbtn"><input class="inp" type="date" id="a-inir" value="${esc(d.iniReal || '')}" max="${ISO(T)}" ${dis}>${ro ? '' : `<button type="button" class="btn sm" data-act="set-today" data-for="a-inir">Hoje</button>`}</div></div>
         <div class="f"><label for="a-fimr">Fim real</label><div class="withbtn"><input class="inp" type="date" id="a-fimr" value="${esc(d.fimReal || '')}" max="${ISO(T)}" ${dis}>${ro ? '' : `<button type="button" class="btn sm" data-act="set-today" data-for="a-fimr">Hoje</button>`}</div></div></div>
-        ${calFor(d.metaId).daily ? `<label class="tog" style="height:auto;padding:9px 12px"><input type="checkbox" id="a-dion" ${d.diarioOff ? '' : 'checked'} ${dis}>${ic('cal')}Acompanhar esta atividade no diário</label>` : ''}
-        ${c && c.di && c.di.on ? `<div class="planhint">${ic('cal')}<span>O avanço desta atividade vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>` : ''}
-        ${c && c.subs ? `<div class="planhint">${ic('lista')}<span>O avanço vem das <b>etapas</b> (${Math.round(c.prog || 0)}%). Início e fim real são preenchidos por elas quando ficam em branco aqui.</span></div>` : ''}
+        ${c && c.di && c.di.on && !c.subs ? `<div class="planhint">${ic('cal')}<span>O avanço vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>` : ''}
+        ${c && c.subs ? `<div class="planhint">${ic('lista')}<span>O avanço vem das <b>etapas</b> (${Math.round(c.prog || 0)}%).</span></div>` : ''}
         <div class="f" ${c && ((c.di && c.di.on) || c.subs) ? 'hidden' : ''}><label class="tog" style="height:auto;border:0;padding:0;background:none"><input type="checkbox" id="a-progon" ${d.progresso != null ? 'checked' : ''} ${dis}>Informar avanço (%)</label>
-          <div class="range" id="a-progrow" ${d.progresso == null ? 'hidden' : ''}><input type="range" id="a-prog" min="0" max="100" step="5" value="${d.progresso ?? 0}" ${dis}><output id="a-progout">${d.progresso ?? 0}%</output></div>
-          <span class="hint">Opcional, mas recomendado. Com o avanço informado, a atividade só fica <b>em risco</b> perto do fim se estiver atrás do esperado, ou a qualquer momento se estiver 25 pontos abaixo.</span></div>
-        <div class="f"><span class="lab">Situação</span><div class="seg-ctl">${[['', 'Automática'], ['pausada', 'Pausada'], ['cancelada', 'Cancelada']].map(([k, l]) => `<label><input type="radio" name="a-manual" value="${k}" ${(d.manual || '') === k ? 'checked' : ''} ${dis}>${l}</label>`).join('')}</div>
-          <span class="hint">Na opção automática, a situação é calculada comparando as datas reais com o plano atual. As variações continuam medidas contra a data original.</span></div>
+          <div class="range" id="a-progrow" ${d.progresso == null ? 'hidden' : ''}><input type="range" id="a-prog" min="0" max="100" step="5" value="${d.progresso ?? 0}" ${dis}><output id="a-progout">${d.progresso ?? 0}%</output></div></div>
       </fieldset>
-      ${a ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
-      ${a && finVisible(a.metaId) ? `<fieldset class="box fin-box" id="a-fin">${finActBox(a.id)}</fieldset>` : ''}
-      ${a && c && c.di && !c.subs ? `<fieldset class="box" id="a-daily">${dailyBoxHTML(a)}</fieldset>` : ''}
+      ${a && c.subs ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
       <div class="f"><label for="a-obs">Observações</label><textarea class="inp" id="a-obs" ${dis} maxlength="2000">${esc(d.obs || '')}</textarea></div>
-      ${hist}
-      ${a ? `<p class="muted" style="font-size:12px;margin:0">Cadastrada em ${a.criadoEm ? new Date(a.criadoEm).toLocaleDateString('pt-BR') : '—'} · plano original ${fds(c.io)} → ${fds(c.fo)}</p>` : ''}
+      <details class="more-d" id="a-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span>${moreBits.length ? `<span class="muted">${moreBits.join(' · ')}</span>` : ''}</summary><div class="more-b">
+        ${ind}
+        <div class="fgrid">
+          ${a ? `<div class="f"><label for="a-meta">Projeto</label><select class="sel" id="a-meta" ${dis}><option value="">Sem projeto</option>${metaOptions(d.metaId, false)}</select></div>` : ''}
+          <div class="f"><label for="a-peso">Peso no projeto</label><select class="sel" id="a-peso" ${dis}>${[1, 2, 3, 4, 5].map(n => `<option value="${n}" ${+d.peso === n ? 'selected' : ''}>${n} ${n === 1 ? '(padrão)' : ''}</option>`).join('')}</select></div>
+          <div class="f ${a ? '' : 'full'}"><span class="lab">Prioridade</span><div class="seg-ctl">${Object.entries(PRIO).map(([k, l]) => `<label><input type="radio" name="a-prio" value="${k}" ${d.prioridade === k ? 'checked' : ''} ${dis}>${l}</label>`).join('')}</div></div>
+          <div class="f full"><span class="lab">Apoio <span class="muted" style="font-weight:400">(recebem aviso; quem lança é o responsável)</span></span>${apoioPicker(d.apoioIds || [], d.respId, dis)}</div>
+          <div class="f full"><span class="lab">Situação</span><div class="seg-ctl">${[['', 'Automática'], ['pausada', 'Pausada'], ['cancelada', 'Cancelada']].map(([k, l]) => `<label><input type="radio" name="a-manual" value="${k}" ${(d.manual || '') === k ? 'checked' : ''} ${dis}>${l}</label>`).join('')}</div>
+            <span class="hint">Automática: calculada pelas datas reais contra o plano atual.</span></div>
+        </div>
+        ${calFor(d.metaId).daily ? `<label class="tog" style="height:auto;padding:9px 12px"><input type="checkbox" id="a-dion" ${d.diarioOff ? '' : 'checked'} ${dis}>${ic('cal')}Acompanhar esta atividade no diário</label>` : ''}
+        ${a && c && c.di && !c.subs ? `<fieldset class="box" id="a-daily">${dailyBoxHTML(a)}</fieldset>` : ''}
+        ${a && !c.subs ? `<fieldset class="box" id="a-subs">${subsBoxHTML(a)}</fieldset>` : ''}
+        ${a && finVisible(a.metaId) ? `<fieldset class="box fin-box" id="a-fin">${finActBox(a.id)}</fieldset>` : ''}
+        ${hist}
+        ${a ? `<p class="muted" style="font-size:12px;margin:0">Cadastrada em ${a.criadoEm ? new Date(a.criadoEm).toLocaleDateString('pt-BR') : '—'} · plano original ${fds(c.io)} → ${fds(c.fo)}</p>` : ''}
+      </div></details>
       <p class="err" id="a-err" role="alert"></p>
     </div>
     <div class="dr-f">${a && !ro ? `<button type="button" class="btn danger sm" data-act="del-act" data-id="${a.id}">${ic('lixo')}Excluir</button>` : ''}<span class="sp"></span>
       <button type="button" class="btn ghost" data-act="close-drawer">${ro ? 'Fechar' : 'Cancelar'}</button>${ro ? '' : `<button type="submit" class="btn primary">${ic('check')}${a ? 'Salvar alterações' : 'Cadastrar'}</button>`}</div></form>`;
   openDrawer(html, !a);
   const form = $('#fa');
+  const md = $('#a-more'); if (md) md.addEventListener('toggle', () => { S.moreOpen = md.open; });
   const upd = () => updPlanHint(a);
   ['a-ini', 'a-fim'].forEach(i => $('#' + i).addEventListener('input', upd));
   upd();
@@ -2383,7 +2392,7 @@ async function saveAct() {
     ...($('#a-dion') ? { diarioOff: !$('#a-dion').checked } : {}),
   };
   const ip = P(v.iniPlan), fp = P(v.fimPlan), ir = P(v.iniReal), fr = P(v.fimReal);
-  const fail = (m, id) => { err.textContent = m; if (id) $('#' + id).focus(); return false; };
+  const fail = (m, id) => { err.textContent = m; if (id) { const el = $('#' + id), dt = el && el.closest('details'); if (dt) dt.open = true; if (el) el.focus(); } return false; };
   if (!v.titulo) return fail('Informe o nome da atividade.', 'a-titulo');
   if (ip == null) return fail('Informe a data de início planejado.', 'a-ini');
   if (fp == null) return fail('Informe a data de fim planejado.', 'a-fim');

@@ -196,7 +196,7 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     // reclassificar replanejamento antigo
     const rep = await q.evaluate(() => { const d = window.__T__.docs.find(x => x.coll === 'atividades' && x.data.metaId === 'q5xvihq5ti1zoqd8g39d' && (x.data.replans || []).length >= 1 && !(x.data.etapas || []).length); return d && { id: d.id, n: d.data.replans.length, fimPara: d.data.replans[0].fimPara }; });
     await go(q, 'atividades--' + FUP); await q.check('#f-done').catch(() => {}); await q.waitForTimeout(300); await q.click(`tr.row[data-id="${rep.id}"]`); await q.waitForTimeout(700);
-    const btns = await q.$$('[data-act="rp-fix"]'); const last = btns[btns.length - 1];
+    await q.click('#a-more summary'); await q.waitForTimeout(200); const btns = await q.$$('[data-act="rp-fix"]'); const last = btns[btns.length - 1];
     await last.click(); await last.click(); await q.waitForTimeout(900);
     const d2 = await T(q, id => window.__T__.docs.find(d => d.id === id).data, rep.id);
     ok((d2.replans || []).length === rep.n - 1 && (d2.correcoes || []).length === 1 && d2.fimOrig === rep.fimPara, `replanejamento 1 reclassificado como correção (${rep.n} → ${(d2.replans || []).length} replanejamentos)`);

@@ -92,28 +92,30 @@ function openEtapa(aid, sid) {
     <div class="dr-h"><div class="r1"><span class="mono muted">${esc(a.codigo || '')}</span>${etBadge(k + 1)}${revMark(c.nRep)}<span class="sp"></span><button type="button" class="btn icon ghost" data-act="close-drawer" aria-label="Fechar">${ic('fechar')}</button></div>
       <h2 id="drTitle" tabindex="-1">${esc(s.nome)}</h2>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${chip(c.status, 'lg')}${earlyTag(c, true)}${c.replan && c.statusOrig !== c.status ? `<span class="muted" style="font-size:12.5px">Pela data original: <b style="color:var(--ink)">${ST[c.statusOrig].l}</b></span>` : ''}</div>
+      <div class="planline"><span>${ic('cal')}Plano <b class="mono">${fds(c.ip)} → ${fds(c.fp)}</b></span><span class="muted">${!c.dIni && !c.dFim ? 'igual ao original' : `original ${fds(c.io)} → ${fds(c.fo)} ${dlt(c.dFim, false)}`}</span>${c.done ? `<span>Concluída ${fds(c.fr)}</span>` : `<span class="${c.rest < 0 ? 'neg' : ''}">${c.rest < 0 ? fdelta(-c.rest) + ' de atraso' : c.rest === 0 ? 'vence hoje' : 'faltam ' + c.rest + ' ' + U()}</span>`}</div>
       <button type="button" class="et-parent" data-act="open-act" data-id="${aid}">${ic('seta', 'flip')}<span>Etapa de <b>${esc(a.titulo)}</b> · ${fds(P(a.iniPlan))} → ${fds(P(a.fimPlan))}</span></button></div>
-    <div class="dr-b">${ind}
-      <div class="fgrid">
-        <div class="f full"><label for="et-nome">Etapa</label><input class="inp" id="et-nome" value="${esc(s.nome)}" maxlength="120" ${dis}></div>
-        <div class="f"><label for="et-resp">Responsável</label><select class="sel" id="et-resp" ${dis}><option value="">Mesmo da atividade (${esc(x.p ? x.p.nome : 'sem responsável')})</option>${pessoaOptions(s.respId || '', false)}</select></div>
-        <div class="f"><label for="et-peso">Peso na atividade</label><select class="sel" id="et-peso" ${dis}>${[1, 2, 3, 4, 5].map(n => `<option value="${n}" ${(+s.peso || 1) === n ? 'selected' : ''}>${n}${n === 1 ? ' (padrão)' : ''}</option>`).join('')}</select></div>
-      </div>
+    <div class="dr-b">
       <fieldset class="box"><legend>Planejamento</legend>
         <div class="fgrid"><div class="f"><label for="et-ini">Início planejado</label><input class="inp" type="date" id="et-ini" value="${esc(s.iniPlan)}" min="${esc(a.iniPlan)}" max="${esc(a.fimPlan)}" ${dis}></div>
         <div class="f"><label for="et-fim">Fim planejado</label><input class="inp" type="date" id="et-fim" value="${esc(s.fimPlan)}" min="${esc(a.iniPlan)}" max="${esc(a.fimPlan)}" ${dis}></div></div>
-        <div class="planhint">${ic('flag')}<span>Original: <b class="mono">${fds(c.io)} → ${fds(c.fo)}</b> · ${durO} ${U()}${mode === 'full' ? '. Mudar as datas pede para dizer se foi replanejamento ou correção de cadastro.' : ''}</span></div>
       </fieldset>
       <fieldset class="box"><legend>Execução</legend>
         <div class="fgrid"><div class="f"><label for="et-inir">Início real</label><div class="withbtn"><input class="inp" type="date" id="et-inir" value="${esc(s.iniReal || '')}" max="${ISO(T)}" ${disx}>${mode !== 'ro' ? `<button type="button" class="btn sm" data-act="set-today" data-for="et-inir">Hoje</button>` : ''}</div></div>
         <div class="f"><label for="et-fimr">Fim real</label><div class="withbtn"><input class="inp" type="date" id="et-fimr" value="${esc(s.fimReal || '')}" max="${ISO(T)}" ${disx}>${mode !== 'ro' ? `<button type="button" class="btn sm" data-act="set-today" data-for="et-fimr">Hoje</button>` : ''}</div></div></div>
-        ${daily ? `<div class="planhint">${ic('cal')}<span>O avanço desta etapa vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>`
+        ${daily ? `<div class="planhint">${ic('cal')}<span>O avanço vem do <b>registro diário</b> (${Math.round(c.prog)}%).</span></div>`
           : `<div class="f"><label for="et-prog">Avanço da etapa (%)</label><div class="range"><input type="range" id="et-prog" min="0" max="100" step="5" value="${s.progresso != null ? s.progresso : 0}" ${disx}><output id="et-progout">${s.progresso != null ? s.progresso : 0}%</output></div></div>`}
-        <div class="dstats sm"><div><span>Avanço</span><b>${Math.round(c.prog || 0)}%</b></div><div><span>Esperado hoje</span><b>${c.esp}%</b></div><div><span>Responsável</span><b style="font-size:13px">${esc(resp ? resp.nome : '—')}</b></div><div><span>Peso</span><b>${+s.peso || 1}</b></div></div>
       </fieldset>
-      ${daily && c.di ? `<fieldset class="box"><legend>Avanço diário</legend><div class="dcal" id="e-daily">${dailyCells(a, s, c)}</div><span class="hint">${canLog(a, s) ? 'Clique num dia para alternar: Feito → Parcial 50% → Não feito → sem registro.' : ''}</span></fieldset>` : ''}
-      ${fin}${hist}
-      <p class="muted" style="font-size:12px;margin:0">Cadastrada em ${s.criadoEm ? new Date(s.criadoEm).toLocaleDateString('pt-BR') : '—'}</p>
+      <details class="more-d" id="et-more" ${S.moreOpen ? 'open' : ''}><summary><span>Mais detalhes</span><span class="muted">${[`responsável ${esc(resp ? resp.nome : '—')}`, `peso ${+s.peso || 1}`, reps.length ? `${reps.length} ${reps.length === 1 ? 'replanejamento' : 'replanejamentos'}` : '', fin ? 'financeiro' : '', daily ? 'diário' : ''].filter(Boolean).join(' · ')}</span></summary><div class="more-b">
+        ${ind}
+        <div class="fgrid">
+          <div class="f full"><label for="et-nome">Nome da etapa</label><input class="inp" id="et-nome" value="${esc(s.nome)}" maxlength="120" ${dis}></div>
+          <div class="f"><label for="et-resp">Responsável</label><select class="sel" id="et-resp" ${dis}><option value="">Mesmo da atividade (${esc(x.p ? x.p.nome : 'sem responsável')})</option>${pessoaOptions(s.respId || '', false)}</select></div>
+          <div class="f"><label for="et-peso">Peso na atividade</label><select class="sel" id="et-peso" ${dis}>${[1, 2, 3, 4, 5].map(n => `<option value="${n}" ${(+s.peso || 1) === n ? 'selected' : ''}>${n}${n === 1 ? ' (padrão)' : ''}</option>`).join('')}</select></div>
+        </div>
+        ${daily && c.di ? `<fieldset class="box"><legend>Avanço diário</legend><div class="dcal" id="e-daily">${dailyCells(a, s, c)}</div><span class="hint">${canLog(a, s) ? 'Clique num dia para alternar: Feito → Parcial 50% → Não feito → sem registro.' : ''}</span></fieldset>` : ''}
+        ${fin}${hist}
+        <p class="muted" style="font-size:12px;margin:0">Cadastrada em ${s.criadoEm ? new Date(s.criadoEm).toLocaleDateString('pt-BR') : '—'} · plano original ${fds(c.io)} → ${fds(c.fo)}</p>
+      </div></details>
       <p class="err" id="et-err" role="alert"></p>
     </div>
     <div class="dr-f">${mode === 'full' ? `<button type="button" class="btn danger sm" data-act="sub-del" data-id="${aid}" data-sid="${sid}">${ic('lixo')}Excluir etapa</button>` : ''}<span class="sp"></span>
@@ -121,13 +123,14 @@ function openEtapa(aid, sid) {
   CAL = pv;
   openDrawer(html, false);
   S.editing = { id: aid, sid, orig: a, etapa: true };
+  const md = $('#et-more'); if (md) md.addEventListener('toggle', () => { S.moreOpen = md.open; });
   const pr = $('#et-prog'); if (pr) pr.addEventListener('input', () => { $('#et-progout').textContent = pr.value + '%'; });
   $('#fet').addEventListener('submit', e => { e.preventDefault(); saveEtapa(aid, sid, mode); });
 }
 async function saveEtapa(aid, sid, mode) {
   const cur = findAct(aid); if (!cur) return;
   const list = JSON.parse(JSON.stringify(subsOf(cur))), k = list.findIndex(z => z.id === sid); if (k < 0) return;
-  const old = list[k], T = today(), err = m => { $('#et-err').textContent = m; return false; };
+  const old = list[k], T = today(), err = m => { $('#et-err').textContent = m; if (/nome|responsável/i.test(m)) { const d = $('#et-more'); if (d) d.open = true; } return false; };
   const ev = { iniReal: $('#et-inir').value || '', fimReal: $('#et-fimr').value || '' };
   if ($('#et-prog')) ev.progresso = +$('#et-prog').value;
   const ir = P(ev.iniReal), fr = P(ev.fimReal);
