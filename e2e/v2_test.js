@@ -219,15 +219,17 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
   {
     const g = await open(); await login(g, 'gestor@teste.com');
     const pids = await g.evaluate(() => S.metas.map(m => m.id));
-    let blank = 0, bad = [];
+    let blank = 0, bad = [], misal = 0;
     for (const pid of pids) for (const z of ['semana', 'mes', 'tri']) {
       await g.evaluate(([pid, z]) => { S.zoom = z; location.hash = 'cronograma--' + pid; render(); }, [pid, z]); await g.waitForTimeout(500);
       const r = await g.evaluate(() => { const w = document.querySelector('#gwrap'), gt = document.querySelector('.gantt'); return w ? { a: w.clientWidth, g: gt.offsetWidth, sw: w.scrollWidth, ms: [...document.querySelectorAll('.g-scale .m')].map(m => m.textContent) } : null; });
       if (!r) continue;
       if (r.g < r.a - 1 || r.sw > Math.max(r.g, r.a) + 1) blank++;
       bad.push(...r.ms.filter(t => t && !/^[A-ZÇ][a-zç]+ \d{4}$/.test(t)));
+      if (z === 'mes') misal += await g.evaluate(() => { const tl = new Set([...document.querySelectorAll('.g-scale .t')].map(t => Math.round(parseFloat(t.style.left)))); return [...document.querySelectorAll('.g-scale .m')].slice(1).filter(m => !tl.has(Math.round(parseFloat(m.style.left)))).length; });
     }
     ok(blank === 0, 'cronograma ocupa a largura toda e termina no fim (sem caixa em branco), em todas as escalas');
+    ok(misal === 0, `na escala Mês, todo início de mês coincide com uma divisória de coluna (${misal} desalinhados)`);
     ok(!bad.length, `meses sempre no mesmo padrão "Mês AAAA"${bad.length ? ' — fora: ' + bad.slice(0, 3).join(', ') : ''}`);
     await g.evaluate(pid => { S.zoom = 'mes'; location.hash = 'cronograma--' + pid; render(); }, FUP); await g.waitForTimeout(600);
     const lw0 = await g.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.gantt')).getPropertyValue('--lw')));

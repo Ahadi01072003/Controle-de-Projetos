@@ -1592,9 +1592,14 @@ function vCronograma() {
     if (S.zoom === 'semana') {
       ticks += `<div class="t ${isWd(d) ? '' : 'we'}" style="left:${X(d)}px;width:${px}px">${dt.getUTCDate()}<br>${DOW[wd(d)]}</div>`;
       if (wd(d) === 6) lines += `<div class="we" style="left:${X(d)}px;width:${px * Math.min(2, hi - d + 1)}px"></div>`;
-    } else if (wd(d) === 1) {
-      if (S.zoom === 'mes') ticks += `<div class="t" style="left:${X(d)}px;width:${px * Math.min(7, hi - d + 1)}px">${fds(d)}</div>`;
-      lines += `<div class="v" style="left:${X(d)}px"></div>`;
+    } else {
+      // escala Mês: a semana é cortada no dia 1º, para a divisória do mês sempre coincidir com uma coluna
+      if (S.zoom === 'mes' && (wd(d) === 1 || dt.getUTCDate() === 1)) {
+        let e = d + 1; while (e <= hi && wd(e) !== 1 && Dt(e).getUTCDate() !== 1) e++;
+        const tw = (e - d) * px;
+        ticks += `<div class="t ${dt.getUTCDate() === 1 ? 'mo' : ''}" style="left:${X(d)}px;width:${tw}px">${tw >= 44 ? fds(d) : ''}</div>`;
+      }
+      if (wd(d) === 1) lines += `<div class="v" style="left:${X(d)}px"></div>`;
     }
   }
   // grupos

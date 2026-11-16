@@ -342,3 +342,5 @@ body.col-resizing,body.col-resizing *{cursor:col-resize!important}
 .g-scale .m:first-child{border-left:0}
 .g-label{box-shadow:4px 0 8px -6px rgba(19,23,34,.12)}
 .g-wrap{scrollbar-gutter:stable}
+.g-scale .t.mo{border-left-color:var(--line-2)}
+.g-scale .t{overflow:hidden}
