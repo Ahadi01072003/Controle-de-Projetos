@@ -336,7 +336,6 @@ button{cursor:pointer}
 .g-grp .g-label .nm{font-weight:700}
 .g-grp.closed{background:var(--surface)}
 .g-track .g-sum{top:15px;height:14px;border-radius:4px;background:color-mix(in srgb,var(--accent) 22%,var(--surface));overflow:hidden;opacity:1;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
-.g-track .g-sum i{display:block;height:100%;background:var(--accent)}
 .g-cnt{position:absolute;top:13px;font-size:11.5px;color:var(--ink-2);white-space:nowrap;line-height:18px}
 .g-cnt .neg{color:var(--bad-ink)}
 .etiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
@@ -481,7 +480,6 @@ button{cursor:pointer}
 .g-sub{height:36px;background:color-mix(in srgb,var(--surface-2) 45%,transparent)}
 .g-sub .g-orig{top:6px;height:4px}.g-sub .g-plan{top:12px;height:11px}.g-sub .g-real{top:26px;height:4px}.g-sub .g-tag{top:9px}
 .g-label .sub-tog{margin-left:-6px}
-.g-plan .gp-fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:color-mix(in srgb,var(--ink) 28%,transparent)}
 .coms{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .coms li{background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:2px}
 .coms li span{color:var(--muted);font-size:11.5px}
@@ -1196,6 +1194,13 @@ body.col-resizing,body.col-resizing *{cursor:col-resize!important}
 .g-wrap{scrollbar-gutter:stable}
 .g-scale .t.mo{border-left-color:var(--line-2)}
 .g-scale .t{overflow:hidden}
+
+/* cronograma: avanço real em preto; % ao lado da barra */
+.gantt .g-real.grp{top:31px;height:5px}
+.gantt .g-real.zero{opacity:.55}
+.gantt .g-real.zero::after{right:-5px}
+.g-tag .g-pct{font-family:var(--f-mono);font-size:10.5px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:0 5px;line-height:16px}
+.g-track .g-sum{overflow:visible}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -1985,7 +1990,7 @@ function vCronograma() {
   const toolbar = `<div class="toolbar rise">
     <div class="seg-ctl" role="group" aria-label="Escala">${[['semana', 'Semana'], ['mes', 'Mês'], ['tri', 'Trimestre']].map(([k, l]) => `<button data-act="zoom" data-z="${k}" class="${S.zoom === k ? 'on' : ''}" aria-pressed="${S.zoom === k}">${l}</button>`).join('')}</div>
     ${gHasEt ? `<button class="btn ghost sm" data-act="exp-all">Expandir etapas</button><button class="btn ghost sm" data-act="col-all">Recolher etapas</button>` : ''}${L.some(x => x.c.subs) ? `<button class="btn ghost sm" data-act="sub-exp-all">Expandir etapas</button><button class="btn ghost sm" data-act="sub-col-all">Recolher etapas</button>` : ''}
-    <div class="lkeys" style="margin-left:auto"><span><i class="solid" style="--c:var(--k-orig);height:5px"></i>Plano original</span><span><i class="solid" style="--c:var(--accent)"></i>Plano atual</span><span><i class="solid" style="--c:var(--ink);height:5px"></i>Execução real</span><span><i class="dot" style="--c:var(--st-late)"></i>Situação</span><span><i style="--c:var(--accent);border-top-width:2px;width:2px;height:12px;border-top:0;border-left:2px solid var(--accent)"></i>Hoje</span></div></div>`;
+    <div class="lkeys" style="margin-left:auto"><span><i class="solid" style="--c:var(--k-orig);height:5px"></i>Plano original</span><span><i class="solid" style="--c:var(--accent)"></i>Plano atual</span><span data-tip="Concluída: do início ao fim real. Em andamento: o comprimento é o % de avanço sobre a barra do plano (50% = metade da barra azul)"><i class="solid" style="--c:var(--ink);height:5px"></i>Avanço real</span><span><i class="dot" style="--c:var(--st-late)"></i>Situação</span><span><i style="--c:var(--accent);border-top-width:2px;width:2px;height:12px;border-top:0;border-left:2px solid var(--accent)"></i>Hoje</span></div></div>`;
   if (!L.length) return toolbar + `<div class="card empty"><h3>Sem atividades neste projeto</h3></div>`;
   let lo = Infinity, hi = -Infinity;
   L.forEach(x => { lo = Math.min(lo, x.c.io, x.c.ip, x.c.ir ?? Infinity); hi = Math.max(hi, x.c.fo, x.c.fp, x.c.fr ?? -Infinity); });
@@ -2017,6 +2022,15 @@ function vCronograma() {
       if (wd(d) === 1) lines += `<div class="v" style="left:${X(d)}px"></div>`;
     }
   }
+  // barra preta = avanço real: concluída vai do início ao fim real; em andamento tem o comprimento do % sobre a barra do plano
+  // (50% chega na metade da barra azul quando o início real bate com o planejado)
+  const progBar = (ir, fr, ip, fp, prog, cls, i) => {
+    if (fr != null && ir != null) return `<div class="g-real ${cls}" style="${i != null ? `--i:${i};` : ''}left:${X(ir)}px;width:${Wd(ir, fr)}px"></div>`;
+    if (ir == null && !(prog > 0)) return '';
+    const st = ir ?? ip, w = Math.max(0, Math.min(100, prog || 0)) / 100 * Wd(ip, fp);
+    return `<div class="g-real open ${cls} ${prog > 0 ? '' : 'zero'}" style="${i != null ? `--i:${i};` : ''}left:${X(st)}px;width:${Math.max(3, w)}px"></div>`;
+  };
+  const pctTag = (done, started, prog) => !done && prog != null && (started || prog > 0) ? `<span class="g-pct">${Math.round(prog)}%</span>` : '';
   // grupos
   const groups = gHasEt ? etapaGroups(L, S.proj, false) : [{ e: null, n: 0, key: (S.proj || 'all') + ':*', xs: L, label: S.proj ? projName(S.proj) : 'Atividades' }];
   let rowsHTML = '', ri = 0;
@@ -2029,21 +2043,20 @@ function vCronograma() {
       <div class="g-track" style="width:${W}px"><div class="g-orig" style="left:${X(st.iniO)}px;width:${Wd(st.iniO, st.fimO)}px;top:8px;height:4px"></div><div class="g-sum grow" data-tip="${gname}
 Plano atual: ${fds(pi)} → ${fds(pf)}
 Plano original: ${fds(st.iniO)} → ${fds(st.fimO)}
-${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.late + ' atrasadas' : ''}" style="left:${X(pi)}px;width:${Wd(pi, pf)}px"><i style="width:${st.prog.toFixed(1)}%"></i></div>${!open ? `<span class="g-cnt" style="left:${X(pf) + Wd(pf, pf) + 6}px">${st.n} ${st.n === 1 ? 'atividade' : 'atividades'}${st.late ? ` · <b class="neg">${st.late} atrasada${st.late > 1 ? 's' : ''}</b>` : ''}</span>` : ''}</div></div>`;
+${st.n} atividades · ${Math.round(st.prog)}% concluído${st.late ? ' · ' + st.late + ' atrasadas' : ''}" style="left:${X(pi)}px;width:${Wd(pi, pf)}px"></div>${st.prog > 0 ? `<div class="g-real open grp" style="left:${X(pi)}px;width:${Math.max(3, st.prog / 100 * Wd(pi, pf))}px"></div>` : ''}${!open ? `<span class="g-cnt" style="left:${X(pf) + Wd(pf, pf) + 6}px">${st.n} ${st.n === 1 ? 'atividade' : 'atividades'}${st.late ? ` · <b class="neg">${st.late} atrasada${st.late > 1 ? 's' : ''}</b>` : ''}</span>` : ''}</div></div>`;
     if (!open) return;
     g.xs.forEach(x => {
       const c = x.c, col = stColor(c.status), i = Math.min(ri++, 20);
-      const tip = `${esc(x.a.codigo || '')} · ${esc(x.a.titulo)}\nPlano atual: ${fds(c.ip)} → ${fds(c.fp)}${c.replan ? `\nOriginal: ${fds(c.io)} → ${fds(c.fo)} (fim ${fdelta(c.dFim)})` : ''}${c.ir != null ? `\nReal: ${fds(c.ir)} → ${c.fr != null ? fds(c.fr) : 'em curso'}` : ''}\n${ST[c.status].l}`;
+      const tip = `${esc(x.a.codigo || '')} · ${esc(x.a.titulo)}\nPlano atual: ${fds(c.ip)} → ${fds(c.fp)}${c.replan ? `\nOriginal: ${fds(c.io)} → ${fds(c.fo)} (fim ${fdelta(c.dFim)})` : ''}${c.ir != null ? `\nReal: ${fds(c.ir)} → ${c.fr != null ? fds(c.fr) : 'em curso'}` : ''}\nAvanço: ${c.done ? 100 : c.prog == null ? 'não informado' : Math.round(c.prog) + '%'}\n${ST[c.status].l}`;
       const tagX = Math.max(X(c.fp) + Wd(c.fp, c.fp), c.replan ? X(c.fo) + Wd(c.fo, c.fo) : 0, c.fr != null ? X(c.fr) + px : 0);
-      const realEnd = c.fr ?? Math.max(c.ir ?? T, T);
       rowsHTML += `<div class="g-row"><div class="g-label" data-act="open-act" data-id="${x.a.id}" tabindex="0">${subToggle(x)}<span class="code">${esc(x.a.codigo || '')}</span><i class="dot" style="--c:${col}" data-tip="${ST[c.status].l}"></i><span class="nm" data-tip="${esc(x.a.titulo)}">${esc(x.a.titulo)}</span>${c.subs ? subCount(x) : ''}${avatar(x.p, 'sm')}</div>
         <div class="g-track" style="width:${W}px">
           <div class="g-orig" style="left:${X(c.io)}px;width:${Wd(c.io, c.fo)}px"></div>
-          <div class="g-plan grow" style="--i:${i};left:${X(c.ip)}px;width:${Wd(c.ip, c.fp)}px;${c.canc ? 'opacity:.4' : ''}" data-act="open-act" data-id="${x.a.id}" data-tip="${tip}">${c.subs ? `<i class="gp-fill" style="width:${Math.round(c.prog || 0)}%"></i>` : ''}</div>
-          ${c.ir != null ? `<div class="g-real grow ${c.fr == null ? 'open' : ''}" style="--i:${i};left:${X(c.ir)}px;width:${Wd(c.ir, realEnd)}px"></div>` : ''}
-          <div class="g-tag" style="left:${tagX + 2}px">${c.replan ? revMark(c.nRep) + dlt(c.dFim, false) : ''}${c.status === 'atrasada' ? `<span class="dl up">${fdelta(dd(c.fp, T))} atraso</span>` : ''}</div>
+          <div class="g-plan grow" style="--i:${i};left:${X(c.ip)}px;width:${Wd(c.ip, c.fp)}px;${c.canc ? 'opacity:.4' : ''}" data-act="open-act" data-id="${x.a.id}" data-tip="${tip}"></div>
+          ${c.canc ? '' : progBar(c.ir, c.fr, c.ip, c.fp, c.prog, 'grow', i)}
+          <div class="g-tag" style="left:${tagX + 2}px">${c.canc ? '' : pctTag(c.done, c.ir != null, c.prog)}${c.replan ? revMark(c.nRep) + dlt(c.dFim, false) : ''}${c.status === 'atrasada' ? `<span class="dl up">${fdelta(dd(c.fp, T))} atraso</span>` : ''}</div>
         </div></div>`;
-      if (c.subs && S.open.has(x.a.id)) subsOf(x.a).forEach((sb, k) => { const sc = c.subs[k], sp = pessoaById(sb.respId) || x.p, scol = stColor(sc.status), sEnd = sc.fr ?? Math.max(sc.ir ?? T, T);
+      if (c.subs && S.open.has(x.a.id)) subsOf(x.a).forEach((sb, k) => { const sc = c.subs[k], sp = pessoaById(sb.respId) || x.p, scol = stColor(sc.status);
         rowsHTML += `<div class="g-row g-sub"><div class="g-label" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" tabindex="0">${etBadge(k + 1)}<i class="dot" style="--c:${scol}" data-tip="${ST[sc.status].l}"></i><span class="nm" data-tip="${esc(sb.nome)}">${esc(sb.nome)}</span>${avatar(sp, 'sm')}</div>
           <div class="g-track" style="width:${W}px"><div class="g-orig" style="left:${X(sc.io)}px;width:${Wd(sc.io, sc.fo)}px"></div>
           <div class="g-plan" style="left:${X(sc.ip)}px;width:${Wd(sc.ip, sc.fp)}px" data-act="edit-sub" data-id="${x.a.id}" data-sid="${sb.id}" data-tip="E${k + 1} · ${esc(sb.nome)}
@@ -2051,8 +2064,8 @@ Plano: ${fds(sc.ip)} → ${fds(sc.fp)}${sc.replan ? `
 Original: ${fds(sc.io)} → ${fds(sc.fo)}` : ''}${sc.ir != null ? `
 Real: ${fds(sc.ir)} → ${sc.fr != null ? fds(sc.fr) : 'em curso'}` : ''}
 ${ST[sc.status].l} · ${Math.round(sc.prog || 0)}%"></div>
-          ${sc.ir != null ? `<div class="g-real ${sc.fr == null ? 'open' : ''}" style="left:${X(sc.ir)}px;width:${Wd(sc.ir, sEnd)}px"></div>` : ''}
-          <div class="g-tag" style="left:${Math.max(X(sc.fp) + Wd(sc.fp, sc.fp), X(sc.fo) + Wd(sc.fo, sc.fo)) + 2}px">${sc.replan ? revMark(sc.nRep) + dlt(sc.dFim, false) : ''}</div></div></div>`; });
+          ${progBar(sc.ir, sc.fr, sc.ip, sc.fp, sc.prog, '')}
+          <div class="g-tag" style="left:${Math.max(X(sc.fp) + Wd(sc.fp, sc.fp), X(sc.fo) + Wd(sc.fo, sc.fo)) + 2}px">${pctTag(sc.done, sc.ir != null, sc.prog)}${sc.replan ? revMark(sc.nRep) + dlt(sc.dFim, false) : ''}</div></div></div>`; });
     });
   });
   return toolbar + `<div class="g-wrap rise" style="--i:1" data-scroll="gantt" id="gwrap"><div class="gantt" style="--lw:${lw}px;width:${lw + W}px" data-w="${W}" data-str="${px > px0 ? 1 : 0}">

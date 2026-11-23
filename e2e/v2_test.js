@@ -247,6 +247,23 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     await g.close();
   }
 
+  // 5d. cronograma: barra do plano num tom só; barra preta de avanço proporcional ao %
+  {
+    const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } }); const q = await ctx.newPage();
+    q.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+    await q.route('**/vendor/supabase.js', r => r.fulfill({ contentType: 'application/javascript', body: `window.__SEED__=${seed};window.__DAILY__=1;\n${fake}` }));
+    await login(q, 'gestor@teste.com');
+    await q.evaluate(() => { S.zoom = 'mes'; S.open.add('act-et'); location.hash = 'cronograma--q5xvihq5ti1zoqd8g39d'; render(); }); await q.waitForTimeout(800);
+    ok(await q.$$eval('.g-plan .gp-fill, .g-sum i', e => e.length) === 0, 'barra azul do plano em um tom só (sem preenchimento mais escuro por dentro)');
+    const rows = await q.evaluate(() => [...document.querySelectorAll('.g-row')].map(r => { const pl = r.querySelector('.g-plan'), re = r.querySelector('.g-real'), pc = r.querySelector('.g-pct');
+      return pl && re && pc ? { pct: parseFloat(pc.textContent), pl: [parseFloat(pl.style.left), parseFloat(pl.style.width)], re: [parseFloat(re.style.left), parseFloat(re.style.width)] } : null; }).filter(Boolean));
+    const off = rows.filter(r => Math.abs(r.re[1] - Math.max(3, r.pct / 100 * r.pl[1])) > 1.5);
+    ok(rows.length >= 3 && !off.length, `barra preta mede o % do avanço sobre a barra do plano (${rows.length} conferidas${off.length ? ', ' + off.length + ' fora' : ''})`);
+    const half = rows.find(r => r.pct === 50 && Math.abs(r.re[0] - r.pl[0]) < 1);
+    ok(half && Math.abs(half.re[0] + half.re[1] - (half.pl[0] + half.pl[1] / 2)) < 1.5, '50% termina exatamente na metade da barra azul');
+    await ctx.close();
+  }
+
   // 6. celular: barra de baixo e "Mais" com sair
   p = await open(390, 844); await login(p, 'admin@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$eval('#mnav', e => getComputedStyle(e).display !== 'none' && e.querySelectorAll('a').length >= 4), 'barra de navegação embaixo no celular');

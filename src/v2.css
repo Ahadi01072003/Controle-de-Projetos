@@ -344,3 +344,10 @@ body.col-resizing,body.col-resizing *{cursor:col-resize!important}
 .g-wrap{scrollbar-gutter:stable}
 .g-scale .t.mo{border-left-color:var(--line-2)}
 .g-scale .t{overflow:hidden}
+
+/* cronograma: avanço real em preto; % ao lado da barra */
+.gantt .g-real.grp{top:31px;height:5px}
+.gantt .g-real.zero{opacity:.55}
+.gantt .g-real.zero::after{right:-5px}
+.g-tag .g-pct{font-family:var(--f-mono);font-size:10.5px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:0 5px;line-height:16px}
+.g-track .g-sum{overflow:visible}
