@@ -20,7 +20,7 @@ R("s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';", "
 # ---------- 2. estado e permissões ----------
 R("open: new Set(), reunioes: [], rep: null,", "open: new Set(), reunioes: [], rep: null, lv: {}, me: null, isAdmin: false, started: false,")
 cut("async function write(fn, quiet = false) {", "/* ===================== UI: eventos, tooltip, toast, confete ===================== */")
-s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + '\n' + part('v2.js') + '\n' + part('financeiro.js') + '\n' + part('fin_ativ.js') + '\n' + part('etapa.js') + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
+s = s.replace("/* ===================== UI: eventos, tooltip, toast, confete ===================== */", part('web_core.js').replace('__SUPA_URL__', URL).replace('__SUPA_KEY__', KEY) + '\n' + part('v2.js') + '\n' + part('financeiro.js') + '\n' + part('fin_ativ.js') + '\n' + part('etapa.js') + '\n' + part('pessoas.js') + "\n/* ===================== UI: eventos, tooltip, toast, confete ===================== */", 1)
 R("S.canWrite", "S.canWrite", s.count("S.canWrite"))  # no-op guard (mantém contagem)
 R("boot();\n</script>", "authInit();\n</script>")
 
@@ -34,11 +34,12 @@ R("""<div class="toasts" id="toasts" aria-live="polite"></div>""", """<div class
 <div class="authwrap" id="auth" hidden></div>""")
 
 # ---------- 4. navegação e telas ----------
-R("""  projetos:        { t: 'Projetos', i: 'alvo', home: 1,""", """  usuarios:        { t: 'Usuários e acessos', i: 'pessoas', home: 1, sub: () => 'Quem entra no sistema e o que cada pessoa pode ver e controlar em cada projeto', r: vUsuarios, after: afterUsuarios },
+R("""  projetos:        { t: 'Projetos', i: 'alvo', home: 1,""", """  usuarios:        { t: 'Usuários e acessos', i: 'chave', home: 1, sub: () => 'Quem entra no sistema e o que cada pessoa pode ver e controlar em cada projeto', r: vUsuarios, after: afterUsuarios },
+  pessoas:         { t: 'Responsáveis', i: 'pessoas', home: 1, sub: () => 'Todas as pessoas cadastradas para receber atividades e etapas, em todos os projetos', r: vCadastroPessoas, after: afterCadastroPessoas },
   projetos:        { t: 'Projetos', i: 'alvo', home: 1,""")
-R("""  const homeExtra = navA('reuniao', projHash('reuniao'));""", """  const homeExtra = navA('reuniao', projHash('reuniao')) + (S.isAdmin ? navA('usuarios', 'usuarios') : '');""")
+R("""  const homeExtra = navA('reuniao', projHash('reuniao'));""", """  const homeExtra = navA('reuniao', projHash('reuniao')) + (S.isAdmin || anyGestor() ? navA('pessoas', 'pessoas', S.state === 'ready' ? `<span class="cnt">${S.pessoas.length}</span>` : '') : '') + (S.isAdmin ? navA('usuarios', 'usuarios') : '');""")
 R("""  if (i < 0) return VIEWS[h] && VIEWS[h].home ? { view: h, proj: null } : { view: 'projetos', proj: null };""",
-  """  if (i < 0) return VIEWS[h] && VIEWS[h].home && (h !== 'usuarios' || S.isAdmin) ? { view: h, proj: null } : { view: 'projetos', proj: null };""")
+  """  if (i < 0) return VIEWS[h] && VIEWS[h].home && (h !== 'usuarios' || S.isAdmin) && (h !== 'pessoas' || S.isAdmin || anyGestor()) ? { view: h, proj: null } : { view: 'projetos', proj: null };""")
 R("""function meetBanner() {
   if (S.state !== 'ready' || !S.canWrite ||""", """function meetBanner() {
   if (S.state !== 'ready' || !anyGestor() ||""")

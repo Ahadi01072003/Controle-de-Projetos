@@ -264,6 +264,39 @@ const ok = (c, msg) => { console.log((c ? 'ok   ' : 'FALHA') + ' ' + msg); if (!
     await ctx.close();
   }
 
+  // 5e. cadastro geral de responsáveis; excluir pessoa transferindo; excluir projeto apaga tudo dentro
+  {
+    const ad = await open(); await login(ad, 'admin@teste.com'); await go(ad, 'pessoas');
+    const nP = await T(ad, () => S.pessoas.length);
+    ok(await ad.$$eval('.pctbl tbody tr', e => e.length) === nP, `tela Responsáveis lista todas as ${nP} pessoas cadastradas`);
+    ok(await ad.$('#nav a[data-v="pessoas"]') !== null, 'Responsáveis aparece no menu geral');
+    // pessoa com atividades: transfere para outra
+    const alvo = await T(ad, () => { const c = {}; S.atividades.forEach(a => { if (a.respId) c[a.respId] = (c[a.respId] || 0) + 1; }); const id = Object.keys(c).sort((x, y) => c[x] - c[y])[0]; return { id, n: c[id], para: S.pessoas.find(p => p.id !== id).id }; });
+    await ad.click(`[data-act="pc-del"][data-id="${alvo.id}"]`); await ad.waitForTimeout(400);
+    ok(await ad.$eval('#fdp .del-list', e => /atividade/.test(e.textContent)), 'janela de exclusão mostra onde a pessoa está em uso');
+    await ad.selectOption('#dp-para', alvo.para); await ad.click('#dp-go'); await ad.waitForTimeout(1200);
+    const d1 = await T(ad, ([id, para]) => ({ gone: !window.__T__.docs.some(d => d.coll === 'pessoas' && d.id === id), left: window.__T__.docs.filter(d => d.coll === 'atividades' && JSON.stringify(d.data).includes(id)).length, moved: window.__T__.docs.filter(d => d.coll === 'atividades' && d.data.respId === para).length, ui: S.pessoas.some(p => p.id === id) }), [alvo.id, alvo.para]);
+    ok(d1.gone && !d1.ui && d1.left === 0, 'responsável excluído e nenhuma atividade ou etapa ficou apontando para ele');
+    ok(d1.moved >= alvo.n, `as ${alvo.n} atividades dele passaram para a pessoa escolhida`);
+    ok(await T(ad, () => window.__T__.backups.length) >= 1, 'cópia de segurança feita antes de excluir');
+    // excluir projeto: pede o nome e apaga atividades e etapas
+    const pj = await T(ad, () => { const m = S.metas.find(x => S.atividades.some(a => a.metaId === x.id)); return { id: m.id, nome: m.nome, n: S.atividades.filter(a => a.metaId === m.id).length }; });
+    await go(ad, 'painel--' + pj.id); await ad.click('.np-edit'); await ad.waitForTimeout(400);
+    await ad.click('[data-act="del-meta"]'); await ad.waitForTimeout(400);
+    ok(await ad.$eval('#dm-go', b => b.disabled), 'excluir projeto só libera depois de digitar o nome');
+    await ad.fill('#dm-nome', pj.nome); await ad.waitForTimeout(100);
+    ok(!(await ad.$eval('#dm-go', b => b.disabled)), 'nome digitado libera o botão');
+    await ad.click('#dm-go'); await ad.waitForTimeout(1300);
+    const d2 = await T(ad, id => ({ meta: window.__T__.docs.some(d => d.coll === 'metas' && d.id === id), acts: window.__T__.docs.filter(d => d.coll === 'atividades' && d.data.metaId === id).length, orf: S.atividades.filter(a => !a.metaId).length, hash: location.hash }), pj.id);
+    ok(!d2.meta && d2.acts === 0, `projeto excluído junto com as ${pj.n} atividades e etapas (nada ficou "sem projeto")`);
+    ok(d2.hash === '#projetos', 'volta para a lista de projetos depois de excluir');
+    await ad.close();
+    // gestor (não admin) vê o cadastro, mas não exclui
+    const gs = await open(); await login(gs, 'gestor@teste.com'); await go(gs, 'pessoas');
+    ok(await gs.$('.pctbl') !== null && await gs.$('[data-act="pc-del"]') === null, 'gestor vê o cadastro de responsáveis, mas não tem botão de excluir');
+    await gs.close();
+  }
+
   // 6. celular: barra de baixo e "Mais" com sair
   p = await open(390, 844); await login(p, 'admin@teste.com'); await go(p, 'painel--' + FUP);
   ok(await p.$eval('#mnav', e => getComputedStyle(e).display !== 'none' && e.querySelectorAll('a').length >= 4), 'barra de navegação embaixo no celular');

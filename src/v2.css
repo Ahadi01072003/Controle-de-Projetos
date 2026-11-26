@@ -351,3 +351,28 @@ body.col-resizing,body.col-resizing *{cursor:col-resize!important}
 .gantt .g-real.zero::after{right:-5px}
 .g-tag .g-pct{font-family:var(--f-mono);font-size:10.5px;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:0 5px;line-height:16px}
 .g-track .g-sum{overflow:visible}
+
+/* cadastro geral de responsáveis */
+.pc-tb{flex-wrap:wrap;gap:10px}
+.pc-tb .f-search{flex:1 1 240px;max-width:340px;align-self:center}
+.pc-n{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.seg-ctl button.on .pc-n{color:var(--accent)}
+.pc-note{font-size:12.5px;margin:-4px 0 10px}
+.pc-who{display:flex;align-items:center;gap:10px}
+.pc-who .muted{font-size:12px;margin-top:1px}
+.pc-dup{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:color-mix(in srgb,var(--st-risk) 16%,var(--surface));color:color-mix(in srgb,var(--st-risk) 70%,var(--ink));vertical-align:1px}
+.pc-login{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-2);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-login .ic{width:13px;height:13px;flex:none;color:var(--muted)}
+.pc-login.off{opacity:.55;text-decoration:line-through}
+.pc-pj{display:inline-flex;align-items:center;gap:5px;font-size:12px;margin:2px 10px 2px 0;white-space:nowrap}
+.pc-pj .dot{width:8px;height:8px;border-radius:3px}
+.pc-act{white-space:nowrap;text-align:right}
+.btn.danger-i:hover{color:var(--st-late);background:color-mix(in srgb,var(--st-late) 10%,transparent)}
+table.tbl.pctbl{min-width:860px}
+.del-list{margin:0 0 6px;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px}
+.del-safe{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:9px 11px;margin:4px 0 0}
+.del-safe .ic{width:15px;height:15px;flex:none;margin-top:1px}
+@media (max-width:760px){table.tbl.pctbl{min-width:0}.pc-tb .f-search{max-width:none}}
+.pc-tb .seg-ctl{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.pc-tb .seg-ctl button{white-space:nowrap;flex:none}
+@media (max-width:760px){.pc-tb .seg-ctl{order:3;width:100%}.pc-tb .sp{display:none}}

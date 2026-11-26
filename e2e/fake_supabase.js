@@ -83,6 +83,23 @@
       const pg = {}; it.filter(i => i.tipo === 'pagamento').forEach(i => pg[i.data] = (pg[i.data] || 0) + +i.valor);
       return { data: { contrato: c ? +c.valor : 0, aditivos: sum('aditivo'), fd: sum('fd'), pago: sum('pagamento'), itens: it.length, pagamentos: Object.keys(pg).sort().map(d => ({ d, v: pg[d] })) }, error: null }; }
     if (name === 'fazer_backup') { if (!p || p.role !== 'admin') return fnErr('Apenas administradores.'); const id = T.backups.length + 1; T.backups.unshift({ id, criado_em: new Date().toISOString(), origem: 'manual', registros: T.docs.length + T.fin_itens.length, dados: { versao: 2, docs: T.docs.map(d => ({ coll: d.coll, id: d.id, data: d.data })), fin_itens: T.fin_itens, fin_contratos: T.fin_contratos } }); return { data: id, error: null }; }
+    if (name === 'excluir_projeto') { if (!p || p.role !== 'admin') return fnErr('Apenas administradores excluem projetos.');
+      const pid = a.p_id, ac = T.docs.filter(d => d.coll === 'atividades' && d.data.metaId === pid);
+      rpc('fazer_backup', {}); const ne = ac.reduce((s, d) => s + (d.data.etapas || []).length, 0);
+      T.docs = T.docs.filter(d => !((['atividades', 'eventos'].includes(d.coll) && d.data.metaId === pid) || (d.coll === 'reunioes' && d.data.projetoId === pid) || (d.coll === 'metas' && d.id === pid)));
+      ['fin_valores', 'fin_itens', 'fin_contratos', 'project_members'].forEach(t => { if (T[t]) T[t] = T[t].filter(r => r.project_id !== pid); });
+      return { data: { atividades: ac.length, etapas: ne, reunioes: 0, financeiro: 0, backup: 1 }, error: null }; }
+    if (name === 'excluir_pessoa') { if (!p || p.role !== 'admin') return fnErr('Apenas administradores excluem responsáveis.');
+      const id = a.p_id, para = a.p_para || ''; if (para === id) return fnErr('Escolha outra pessoa para receber as atividades.');
+      rpc('fazer_backup', {}); let na = 0, ne = 0, nap = 0;
+      T.docs.filter(d => d.coll === 'atividades').forEach(d => { const x = d.data;
+        if (x.respId === id) { x.respId = para; na++; }
+        (x.etapas || []).forEach(e => { if (e.respId === id) { e.respId = para; ne++; } });
+        if ((x.apoioIds || []).includes(id)) { x.apoioIds = x.apoioIds.filter(v => v !== id && v !== x.respId); if (para && para !== x.respId && !x.apoioIds.includes(para)) x.apoioIds.push(para); nap++; } });
+      T.docs.filter(d => d.coll === 'metas' && d.data.respId === id).forEach(d => d.data.respId = para);
+      let nl = 0; T.profiles.forEach(u => { if (u.pessoa_id === id) { u.pessoa_id = null; nl++; } });
+      T.docs = T.docs.filter(d => !(d.coll === 'pessoas' && d.id === id));
+      return { data: { atividades: na, etapas: ne, apoio: nap, logins: nl, backup: 1 }, error: null }; }
     return fnErr('rpc desconhecida ' + name);
   }
   window.__T__ = T;

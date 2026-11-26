@@ -307,7 +307,7 @@ function toggleMore() {
   const m = $('#moreMenu'), open = m.hidden; closePops();
   if (open) { m.hidden = false; $('#btnMore').setAttribute('aria-expanded', 'true'); const f = m.querySelector('button:not([hidden])'); if (f) f.focus(); }
 }
-const MSHORT = { minhas: 'Minhas', projetos: 'Projetos', reuniao: 'Reunião', usuarios: 'Usuários', painel: 'Painel', atividades: 'Atividades', cronograma: 'Cronograma', financeiro: 'Financeiro' };
+const MSHORT = { minhas: 'Minhas', projetos: 'Projetos', reuniao: 'Reunião', pessoas: 'Pessoas', usuarios: 'Usuários', painel: 'Painel', atividades: 'Atividades', cronograma: 'Cronograma', financeiro: 'Financeiro' };
 function renderMobileNav() {
   const el = $('#mnav'); if (!el) return;
   if (S.state !== 'ready') { el.innerHTML = ''; return; }

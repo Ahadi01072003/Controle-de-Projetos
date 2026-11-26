@@ -2651,20 +2651,8 @@ async function delAct(id, btn) {
   const copy = JSON.parse(JSON.stringify(a)); delete copy.id;
   if (await write(() => db.doc('atividades/' + id).delete())) { logEvt('exclusao', a, `Atividade excluída: ${a.titulo}`); closeDrawer(); toast(`${a.codigo} excluída.`, '', 'Desfazer', () => write(() => db.doc('atividades/' + id).set(copy))); }
 }
-async function delMeta(id, btn) {
-  const n = +btn.dataset.n;
-  if (!armed(btn, n ? `Excluir e desvincular ${n}` : 'Confirmar exclusão')) return;
-  if (!(await write(() => db.doc('metas/' + id).delete()))) return;
-  for (const a of S.atividades.filter(x => x.metaId === id)) await write(() => db.doc('atividades/' + a.id).update({ metaId: '' }));
-  closeModal(); toast('Projeto excluído.' + (n ? ` ${n} atividades ficaram sem projeto.` : ''), '');
-}
-async function delPessoa(id, btn) {
-  const n = +btn.dataset.n;
-  if (!armed(btn, n ? `Excluir e liberar ${n}` : 'Confirmar exclusão')) return;
-  if (!(await write(() => db.doc('pessoas/' + id).delete()))) return;
-  for (const a of S.atividades.filter(x => x.respId === id)) await write(() => db.doc('atividades/' + a.id).update({ respId: '' }));
-  closeModal(); toast('Pessoa removida.' + (n ? ` ${n} atividades ficaram sem responsável.` : ''), '');
-}
+function delMeta(id) { openDelMeta(id); }      // apaga o projeto e tudo dentro dele (src/pessoas.js)
+function delPessoa(id) { openDelPessoa(id); }  // escolhe quem recebe as atividades (src/pessoas.js)
 async function delExamples(btn) {
   const items = [['atividades', S.atividades], ['metas', S.metas], ['pessoas', S.pessoas]].flatMap(([c, arr]) => arr.filter(d => d.exemplo).map(d => c + '/' + d.id));
   if (!items.length) return;
